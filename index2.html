@@ -1,0 +1,3559 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistem Manajemen Surat Izin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .login-bg {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23667eea" opacity="0.1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grain)"/></svg>');
+        }
+        .input-focus:focus { box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    </style>
+</head>
+<body class="login-bg min-h-screen">
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Header -->
+            <div class="text-center">
+                <div class="mx-auto h-20 w-20 gradient-bg rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-seedling text-white text-3xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Selamat Datang</h2>
+                <p class="text-gray-600">Masuk ke Sistem Manajemen Surat Izin</p>
+                <p class="text-sm text-gray-500 mt-2">Dinas Pertanian</p>
+            </div>
+
+            <!-- Login Form -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 card-hover">
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user mr-2 text-gray-400"></i>Username
+                        </label>
+                        <input id="username" name="username" type="text" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent input-focus transition-all"
+                               placeholder="Masukkan username Anda">
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-lock mr-2 text-gray-400"></i>Password
+                        </label>
+                        <div class="relative">
+                            <input id="password" name="password" type="password" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent input-focus transition-all pr-12"
+                                   placeholder="Masukkan password Anda">
+                            <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <i id="passwordToggle" class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input id="remember" name="remember" type="checkbox"
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="remember" class="ml-2 block text-sm text-gray-700">
+                                Ingat saya
+                            </label>
+                        </div>
+                        <div class="text-sm">
+                            <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
+                                Lupa password?
+                            </a>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white gradient-bg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                        <span id="loginButtonText">Masuk</span>
+                        <i id="loginSpinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                    </button>
+                </form>
+
+                <!-- Demo Accounts -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <p class="text-sm text-gray-600 text-center mb-4">Akun Demo untuk Testing:</p>
+                    <div class="space-y-2">
+                        <button onclick="quickLogin('admin')" class="w-full text-left px-3 py-2 text-xs bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="fas fa-user-shield text-blue-600 mr-2"></i>
+                            <strong>Admin:</strong> admin / admin123
+                        </button>
+                        <button onclick="quickLogin('pimpinan')" class="w-full text-left px-3 py-2 text-xs bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="fas fa-user-tie text-green-600 mr-2"></i>
+                            <strong>Pimpinan:</strong> pimpinan / pimpinan123
+                        </button>
+                        <button onclick="quickLogin('pegawai')" class="w-full text-left px-3 py-2 text-xs bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="fas fa-user text-purple-600 mr-2"></i>
+                            <strong>Pegawai:</strong> pegawai / pegawai123
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center text-sm text-gray-500">
+                <p>&copy; 2024 Dinas Pertanian. Semua hak dilindungi.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Page (Hidden initially) -->
+    <div id="dashboardPage" class="hidden">
+        <!-- Navigation -->
+        <nav class="gradient-bg shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center">
+                            <i class="fas fa-seedling text-white text-2xl mr-3"></i>
+                            <span class="text-white text-xl font-bold">Dinas Pertanian</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-white text-sm">
+                            <span>Selamat datang, </span>
+                            <span id="loggedInUser" class="font-semibold"></span>
+                        </div>
+                        <button onclick="showNotifications()" class="text-white hover:text-gray-200 relative">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span id="notificationBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                        </button>
+                        <button onclick="logout()" class="text-white hover:text-gray-200" title="Logout">
+                            <i class="fas fa-sign-out-alt text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard Surat Izin</h1>
+                <p class="text-gray-600">Kelola surat izin dengan mudah dan efisien</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div id="statsCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Stats will be populated by JavaScript -->
+            </div>
+
+            <!-- Main Content -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column -->
+                <div class="lg:col-span-2">
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Aksi Cepat</h2>
+                        <div id="quickActions" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Quick actions will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Recent Applications -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold text-gray-900">Surat Izin Terbaru</h2>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat Semua</button>
+                        </div>
+                        <div id="recentApplications" class="space-y-4">
+                            <!-- Applications will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <!-- Profile Card -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                <i id="profileIcon" class="fas fa-user text-white text-2xl"></i>
+                            </div>
+                            <h3 id="profileName" class="text-lg font-semibold text-gray-900"></h3>
+                            <p id="profileRole" class="text-gray-600"></p>
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Status:</span>
+                                    <span class="text-green-600 font-medium">Aktif</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Widget -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Kalender</h3>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-600 mb-1" id="currentDate"></div>
+                            <div class="text-gray-600" id="currentMonth"></div>
+                        </div>
+                        <div class="mt-4 space-y-2">
+                            <div class="flex items-center text-sm">
+                                <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                <span class="text-gray-600">3 Izin Disetujui</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <div class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                                <span class="text-gray-600">2 Menunggu Persetujuan</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for New Application -->
+    <div id="applicationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Ajukan Surat Izin</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Izin</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option>Izin Sakit</option>
+                        <option>Izin Cuti</option>
+                        <option>Izin Dinas Luar</option>
+                        <option>Izin Pribadi</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
+                    <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai</label>
+                    <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
+                    <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan keterangan izin..."></textarea>
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Batal</button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Ajukan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Management Modal -->
+    <div id="userManagementModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Kelola Pengguna</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex space-x-4">
+                        <input type="text" id="userSearch" placeholder="Cari pengguna..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="roleFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Role</option>
+                            <option value="admin">Admin</option>
+                            <option value="pimpinan">Pimpinan</option>
+                            <option value="pegawai">Pegawai</option>
+                        </select>
+                    </div>
+                    <button onclick="showAddUserForm()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                        <i class="fas fa-plus mr-2"></i>Tambah Pengguna
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="text-left p-4 font-semibold text-gray-900">Nama</th>
+                                <th class="text-left p-4 font-semibold text-gray-900">Username</th>
+                                <th class="text-left p-4 font-semibold text-gray-900">Role</th>
+                                <th class="text-left p-4 font-semibold text-gray-900">Status</th>
+                                <th class="text-left p-4 font-semibold text-gray-900">Terakhir Login</th>
+                                <th class="text-left p-4 font-semibold text-gray-900">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- User data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div id="addUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="userFormTitle" class="text-lg font-semibold text-gray-900">Tambah Pengguna Baru</h3>
+                <button onclick="closeAddUserModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="userForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                    <input type="text" id="userName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input type="text" id="userUsername" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="userPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                    <select id="userRole" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Role</option>
+                        <option value="admin">Admin</option>
+                        <option value="pimpinan">Pimpinan</option>
+                        <option value="pegawai">Pegawai</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="userEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button type="button" onclick="closeAddUserModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Batal</button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- System Reports Modal -->
+    <div id="systemReportsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Laporan Sistem</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-chart-line text-blue-600 text-2xl mr-3"></i>
+                            <div>
+                                <p class="text-sm text-blue-600 font-medium">Total Surat Izin</p>
+                                <p class="text-2xl font-bold text-blue-900">1,247</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-600 text-2xl mr-3"></i>
+                            <div>
+                                <p class="text-sm text-green-600 font-medium">Disetujui</p>
+                                <p class="text-2xl font-bold text-green-900">1,089</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-red-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-times-circle text-red-600 text-2xl mr-3"></i>
+                            <div>
+                                <p class="text-sm text-red-600 font-medium">Ditolak</p>
+                                <p class="text-2xl font-bold text-red-900">158</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Statistik Bulanan</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Januari 2024</span>
+                                <span class="font-semibold">124 surat</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Februari 2024</span>
+                                <span class="font-semibold">98 surat</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Maret 2024</span>
+                                <span class="font-semibold">156 surat</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Jenis Izin Terpopuler</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Cuti Tahunan</span>
+                                <span class="font-semibold">45%</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Izin Sakit</span>
+                                <span class="font-semibold">28%</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Dinas Luar</span>
+                                <span class="font-semibold">18%</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Izin Pribadi</span>
+                                <span class="font-semibold">9%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button onclick="exportReport('pdf')" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center">
+                        <i class="fas fa-file-pdf mr-2"></i>Export PDF
+                    </button>
+                    <button onclick="exportReport('excel')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center">
+                        <i class="fas fa-file-excel mr-2"></i>Export Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Pengaturan Sistem</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="space-y-6">
+                    <div class="border-b border-gray-200 pb-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Pengaturan Umum</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nama Instansi</label>
+                                <input type="text" value="Dinas Pertanian" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Alamat</label>
+                                <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">Jl. Raya Pertanian No. 123, Jakarta Selatan</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email Kontak</label>
+                                <input type="email" value="admin@dinaspertanian.go.id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-b border-gray-200 pb-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Pengaturan Izin</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium text-gray-900">Auto Approval untuk Izin Sakit</p>
+                                    <p class="text-sm text-gray-600">Otomatis menyetujui izin sakit dengan surat dokter</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium text-gray-900">Notifikasi Email</p>
+                                    <p class="text-sm text-gray-600">Kirim email notifikasi untuk setiap pengajuan</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Maksimal Hari Cuti per Tahun</label>
+                                <input type="number" value="12" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Keamanan</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium text-gray-900">Two-Factor Authentication</p>
+                                    <p class="text-sm text-gray-600">Aktifkan 2FA untuk keamanan tambahan</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Session Timeout (menit)</label>
+                                <input type="number" value="30" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end space-x-3">
+                    <button onclick="closeAllModals()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Batal</button>
+                    <button onclick="saveSettings()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Simpan Pengaturan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Applications Modal -->
+    <div id="reviewApplicationsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Review Surat Izin</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex space-x-4">
+                        <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Status</option>
+                            <option value="pending">Menunggu Review</option>
+                            <option value="approved">Disetujui</option>
+                            <option value="rejected">Ditolak</option>
+                        </select>
+                        <select id="typeFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Jenis</option>
+                            <option value="Izin Sakit">Izin Sakit</option>
+                            <option value="Cuti Tahunan">Cuti Tahunan</option>
+                            <option value="Dinas Luar">Dinas Luar</option>
+                            <option value="Izin Pribadi">Izin Pribadi</option>
+                        </select>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <span id="pendingCount">8</span> surat menunggu review
+                    </div>
+                </div>
+                <div class="space-y-4" id="applicationsToReview">
+                    <!-- Applications will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Detail Modal -->
+    <div id="applicationDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Detail Surat Izin</h3>
+                    <button onclick="closeApplicationDetail()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div id="applicationDetailContent">
+                    <!-- Detail content will be populated here -->
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button onclick="rejectApplication()" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center">
+                        <i class="fas fa-times mr-2"></i>Tolak
+                    </button>
+                    <button onclick="approveApplication()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center">
+                        <i class="fas fa-check mr-2"></i>Setujui
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Report Modal -->
+    <div id="monthlyReportModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Laporan Bulanan</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex space-x-4">
+                        <select id="monthSelect" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="2024-01">Januari 2024</option>
+                            <option value="2024-02">Februari 2024</option>
+                            <option value="2024-03">Maret 2024</option>
+                        </select>
+                    </div>
+                    <button onclick="exportMonthlyReport()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                        <i class="fas fa-download mr-2"></i>Export PDF
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-blue-50 rounded-lg p-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-alt text-blue-600 text-3xl mr-4"></i>
+                            <div>
+                                <p class="text-sm text-blue-600 font-medium">Total Pengajuan</p>
+                                <p class="text-3xl font-bold text-blue-900">124</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-600 text-3xl mr-4"></i>
+                            <div>
+                                <p class="text-sm text-green-600 font-medium">Disetujui</p>
+                                <p class="text-3xl font-bold text-green-900">98</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-red-50 rounded-lg p-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-times-circle text-red-600 text-3xl mr-4"></i>
+                            <div>
+                                <p class="text-sm text-red-600 font-medium">Ditolak</p>
+                                <p class="text-3xl font-bold text-red-900">26</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Breakdown per Jenis</h4>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Cuti Tahunan</span>
+                                <div class="flex items-center">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 45%"></div>
+                                    </div>
+                                    <span class="font-semibold">56</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Izin Sakit</span>
+                                <div class="flex items-center">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-green-600 h-2 rounded-full" style="width: 28%"></div>
+                                    </div>
+                                    <span class="font-semibold">35</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Dinas Luar</span>
+                                <div class="flex items-center">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-yellow-600 h-2 rounded-full" style="width: 18%"></div>
+                                    </div>
+                                    <span class="font-semibold">22</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Izin Pribadi</span>
+                                <div class="flex items-center">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-purple-600 h-2 rounded-full" style="width: 9%"></div>
+                                    </div>
+                                    <span class="font-semibold">11</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Trend Mingguan</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Minggu 1</span>
+                                <span class="font-semibold">28 pengajuan</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Minggu 2</span>
+                                <span class="font-semibold">35 pengajuan</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Minggu 3</span>
+                                <span class="font-semibold">31 pengajuan</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Minggu 4</span>
+                                <span class="font-semibold">30 pengajuan</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee List Modal -->
+    <div id="employeeListModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Daftar Pegawai</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <input type="text" id="employeeSearch" placeholder="Cari pegawai..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <div class="text-sm text-gray-600">
+                        Total: <span class="font-semibold">45 pegawai</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="employeeGrid">
+                    <!-- Employee cards will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Modal -->
+    <div id="statisticsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Statistik Izin</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+                        <div class="flex items-center">
+                            <i class="fas fa-chart-line text-3xl mr-4"></i>
+                            <div>
+                                <p class="text-sm opacity-90">Rata-rata Harian</p>
+                                <p class="text-2xl font-bold">4.2</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-3xl mr-4"></i>
+                            <div>
+                                <p class="text-sm opacity-90">Waktu Proses</p>
+                                <p class="text-2xl font-bold">2.3 hari</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-6 text-white">
+                        <div class="flex items-center">
+                            <i class="fas fa-percentage text-3xl mr-4"></i>
+                            <div>
+                                <p class="text-sm opacity-90">Tingkat Approval</p>
+                                <p class="text-2xl font-bold">87%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-3xl mr-4"></i>
+                            <div>
+                                <p class="text-sm opacity-90">Pegawai Aktif</p>
+                                <p class="text-2xl font-bold">42</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Top 10 Pegawai (Pengajuan Terbanyak)</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-xs font-bold text-blue-600">1</span>
+                                    </div>
+                                    <span class="font-medium">Ahmad Wijaya</span>
+                                </div>
+                                <span class="text-gray-600">12 pengajuan</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-xs font-bold text-blue-600">2</span>
+                                    </div>
+                                    <span class="font-medium">Siti Nurhaliza</span>
+                                </div>
+                                <span class="text-gray-600">10 pengajuan</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-xs font-bold text-blue-600">3</span>
+                                    </div>
+                                    <span class="font-medium">Budi Santoso</span>
+                                </div>
+                                <span class="text-gray-600">9 pengajuan</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Perbandingan 6 Bulan Terakhir</h4>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Agustus 2023</span>
+                                <div class="flex items-center">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 60%"></div>
+                                    </div>
+                                    <span class="font-semibold">89</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">September 2023</span>
+                                <div class="flex items-center">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 75%"></div>
+                                    </div>
+                                    <span class="font-semibold">112</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Oktober 2023</span>
+                                <div class="flex items-center">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 85%"></div>
+                                    </div>
+                                    <span class="font-semibold">127</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">November 2023</span>
+                                <div class="flex items-center">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 70%"></div>
+                                    </div>
+                                    <span class="font-semibold">104</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Desember 2023</span>
+                                <div class="flex items-center">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 90%"></div>
+                                    </div>
+                                    <span class="font-semibold">134</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Januari 2024</span>
+                                <div class="flex items-center">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 100%"></div>
+                                    </div>
+                                    <span class="font-semibold">149</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Application Modal -->
+    <div id="newApplicationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Ajukan Surat Izin Baru</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <form id="newApplicationForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Izin</label>
+                            <select id="leaveType" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Pilih jenis izin</option>
+                                <option value="Izin Sakit">Izin Sakit</option>
+                                <option value="Cuti Tahunan">Cuti Tahunan</option>
+                                <option value="Dinas Luar">Dinas Luar</option>
+                                <option value="Izin Pribadi">Izin Pribadi</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Durasi</label>
+                            <select id="leaveDuration" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Pilih durasi</option>
+                                <option value="Setengah hari">Setengah hari</option>
+                                <option value="1 hari">1 hari</option>
+                                <option value="2 hari">2 hari</option>
+                                <option value="3 hari">3 hari</option>
+                                <option value="1 minggu">1 minggu</option>
+                                <option value="2 minggu">2 minggu</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
+                            <input type="date" id="startDate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Selesai</label>
+                            <input type="date" id="endDate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Alasan/Keterangan</label>
+                        <textarea id="leaveReason" rows="4" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Jelaskan alasan pengajuan izin Anda..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Lampiran (Opsional)</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <input type="file" id="attachmentFile" accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+                            <label for="attachmentFile" class="cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2 block"></i>
+                                <span class="text-gray-600">Klik untuk upload file (PDF, JPG, PNG)</span>
+                                <p class="text-xs text-gray-500 mt-1">Maksimal 5MB</p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex">
+                            <i class="fas fa-info-circle text-blue-600 mr-3 mt-1"></i>
+                            <div>
+                                <h5 class="font-semibold text-blue-800">Informasi</h5>
+                                <p class="text-sm text-blue-700">Surat izin akan dikirim ke atasan untuk persetujuan. Anda akan mendapat notifikasi setelah diproses.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3 pt-4">
+                        <button type="button" onclick="closeAllModals()" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">Batal</button>
+                        <button type="submit" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                            <i class="fas fa-paper-plane mr-2"></i>Ajukan Izin
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application History Modal -->
+    <div id="applicationHistoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Riwayat Surat Izin</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex space-x-4">
+                        <select id="historyStatusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Status</option>
+                            <option value="pending">Menunggu</option>
+                            <option value="approved">Disetujui</option>
+                            <option value="rejected">Ditolak</option>
+                        </select>
+                        <select id="historyYearFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Tahun</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                        </select>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        Total: <span id="historyCount" class="font-semibold">12 pengajuan</span>
+                    </div>
+                </div>
+
+                <div class="space-y-4" id="applicationHistoryList">
+                    <!-- History items will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave Balance Modal -->
+    <div id="leaveBalanceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Saldo Cuti & Izin</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar-check text-3xl mr-4"></i>
+                            <div>
+                                <p class="text-sm opacity-90">Cuti Tersisa</p>
+                                <p class="text-3xl font-bold">8 hari</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar-day text-3xl mr-4"></i>
+                            <div>
+                                <p class="text-sm opacity-90">Cuti Terpakai</p>
+                                <p class="text-3xl font-bold">4 hari</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar-alt text-3xl mr-4"></i>
+                            <div>
+                                <p class="text-sm opacity-90">Total Hak Cuti</p>
+                                <p class="text-3xl font-bold">12 hari</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Penggunaan Cuti 2024</h4>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Januari</span>
+                                <div class="flex items-center">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 50%"></div>
+                                    </div>
+                                    <span class="font-semibold">2 hari</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Februari</span>
+                                <div class="flex items-center">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 25%"></div>
+                                    </div>
+                                    <span class="font-semibold">1 hari</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Maret</span>
+                                <div class="flex items-center">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 25%"></div>
+                                    </div>
+                                    <span class="font-semibold">1 hari</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Rencana Cuti</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <div>
+                                    <p class="font-medium text-gray-900">Liburan Lebaran</p>
+                                    <p class="text-sm text-gray-600">April 2024</p>
+                                </div>
+                                <span class="text-yellow-600 font-semibold">3 hari</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div>
+                                    <p class="font-medium text-gray-900">Liburan Keluarga</p>
+                                    <p class="text-sm text-gray-600">Juli 2024</p>
+                                </div>
+                                <span class="text-blue-600 font-semibold">5 hari</span>
+                            </div>
+                        </div>
+                        <button class="w-full mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+                            <i class="fas fa-plus mr-2"></i>Tambah Rencana Cuti
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-gray-50 rounded-lg p-4">
+                    <h5 class="font-semibold text-gray-900 mb-2">Ketentuan Cuti</h5>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Hak cuti tahunan: 12 hari kerja</li>
+                        <li>• Cuti tidak dapat diakumulasi ke tahun berikutnya</li>
+                        <li>• Pengajuan cuti minimal 3 hari sebelum tanggal cuti</li>
+                        <li>• Cuti sakit tidak mengurangi jatah cuti tahunan</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Profile Modal -->
+    <div id="employeeProfileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Profil Pegawai</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="flex items-center mb-8">
+                    <div class="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-6">
+                        <i class="fas fa-user text-white text-3xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Ahmad Wijaya</h2>
+                        <p class="text-gray-600">Staff Pertanian</p>
+                        <p class="text-sm text-gray-500">NIP: 198501012010011001</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Informasi Pribadi</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                                <input type="text" value="Ahmad Wijaya" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Email</label>
+                                <input type="email" value="ahmad@dinaspertanian.go.id" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Telepon</label>
+                                <input type="tel" value="081234567890" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Alamat</label>
+                                <textarea rows="3" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">Jl. Merdeka No. 123, Jakarta Selatan</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Informasi Kepegawaian</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">NIP</label>
+                                <input type="text" value="198501012010011001" readonly class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Jabatan</label>
+                                <input type="text" value="Staff Pertanian" readonly class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Unit Kerja</label>
+                                <input type="text" value="Bidang Tanaman Pangan" readonly class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tanggal Bergabung</label>
+                                <input type="text" value="1 Januari 2010" readonly class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Ubah Password</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Password Lama</label>
+                            <input type="password" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Password Baru</label>
+                            <input type="password" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Konfirmasi Password</label>
+                            <input type="password" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end space-x-3">
+                    <button onclick="closeAllModals()" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Batal</button>
+                    <button onclick="updateProfile()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Simpan Perubahan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div id="notificationsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <h3 class="text-xl font-semibold text-gray-900">Notifikasi</h3>
+                        <span id="unreadCount" class="ml-3 bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full">3 belum dibaca</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="markAllAsRead()" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            Tandai Semua Dibaca
+                        </button>
+                        <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex space-x-4">
+                        <select id="notificationFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Notifikasi</option>
+                            <option value="application">Surat Izin</option>
+                            <option value="system">Sistem</option>
+                            <option value="reminder">Pengingat</option>
+                        </select>
+                        <select id="notificationStatus" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Status</option>
+                            <option value="unread">Belum Dibaca</option>
+                            <option value="read">Sudah Dibaca</option>
+                        </select>
+                    </div>
+                    <button onclick="clearAllNotifications()" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                        <i class="fas fa-trash mr-1"></i>Hapus Semua
+                    </button>
+                </div>
+
+                <div id="notificationsList" class="space-y-3">
+                    <!-- Notifications will be populated here -->
+                </div>
+
+                <div id="noNotifications" class="hidden text-center py-12">
+                    <i class="fas fa-bell-slash text-gray-400 text-4xl mb-4"></i>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Tidak Ada Notifikasi</h4>
+                    <p class="text-gray-600">Semua notifikasi Anda sudah dibaca atau dihapus.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Settings Modal -->
+    <div id="documentSettingsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Pengaturan Format Nomor Surat</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="mb-6">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-info-circle text-blue-600 mr-3"></i>
+                            <div>
+                                <h5 class="font-semibold text-blue-800">Format Saat Ini</h5>
+                                <p class="text-blue-700" id="currentDocumentFormat">800.1.11.5/001/2025</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="documentSettingsForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Prefix (Awalan)</label>
+                            <input type="text" id="docPrefix" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="800.1.11.5">
+                            <p class="text-xs text-gray-500 mt-1">Contoh: 800.1.11.5 atau DINAS/PERTANIAN</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Suffix (Akhiran)</label>
+                            <input type="text" id="docSuffix" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="2025">
+                            <p class="text-xs text-gray-500 mt-1">Biasanya tahun, contoh: 2025</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Separator (Pemisah)</label>
+                            <select id="docSeparator" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="/">/</option>
+                                <option value="-">-</option>
+                                <option value=".">.</option>
+                                <option value="_">_</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Urut Berikutnya</label>
+                            <input type="number" id="docNextNumber" min="1" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <p class="text-xs text-gray-500 mt-1">Nomor urut untuk surat berikutnya</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="docResetYearly" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="docResetYearly" class="ml-2 block text-sm text-gray-700">
+                                Reset nomor urut setiap tahun baru
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 ml-6">Jika diaktifkan, nomor urut akan kembali ke 001 setiap tahun baru</p>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h5 class="font-semibold text-gray-900 mb-2">Preview Format</h5>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-mono bg-white px-3 py-2 rounded border" id="formatPreview">800.1.11.5/005/2025</span>
+                            <button type="button" onclick="updatePreview()" class="text-blue-600 hover:text-blue-800 text-sm">
+                                <i class="fas fa-sync-alt mr-1"></i>Update Preview
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="flex">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-3 mt-1"></i>
+                            <div>
+                                <h5 class="font-semibold text-yellow-800">Perhatian</h5>
+                                <p class="text-sm text-yellow-700">Perubahan format nomor surat hanya akan berlaku untuk surat baru. Surat yang sudah ada tidak akan berubah nomornya.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3 pt-4">
+                        <button type="button" onclick="resetToDefault()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
+                            Reset ke Default
+                        </button>
+                        <button type="button" onclick="closeAllModals()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                            <i class="fas fa-save mr-2"></i>Simpan Pengaturan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Data Modal -->
+    <div id="backupModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900">Backup & Restore Data</h3>
+                    <button onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="border border-gray-200 rounded-lg p-6">
+                        <div class="text-center">
+                            <i class="fas fa-download text-blue-600 text-4xl mb-4"></i>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-2">Backup Data</h4>
+                            <p class="text-gray-600 mb-4">Buat backup lengkap dari semua data sistem</p>
+                            <div class="space-y-3">
+                                <label class="flex items-center">
+                                    <input type="checkbox" checked class="mr-2">
+                                    <span class="text-sm">Data Pengguna</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" checked class="mr-2">
+                                    <span class="text-sm">Data Surat Izin</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" checked class="mr-2">
+                                    <span class="text-sm">Pengaturan Sistem</span>
+                                </label>
+                            </div>
+                            <button onclick="createBackup()" class="w-full mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-download mr-2"></i>Buat Backup
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="border border-gray-200 rounded-lg p-6">
+                        <div class="text-center">
+                            <i class="fas fa-upload text-green-600 text-4xl mb-4"></i>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-2">Restore Data</h4>
+                            <p class="text-gray-600 mb-4">Pulihkan data dari file backup</p>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 mb-4">
+                                <input type="file" id="backupFile" accept=".json,.sql" class="hidden">
+                                <label for="backupFile" class="cursor-pointer">
+                                    <i class="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2 block"></i>
+                                    <span class="text-gray-600">Klik untuk pilih file backup</span>
+                                </label>
+                            </div>
+                            <button onclick="restoreBackup()" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                                <i class="fas fa-upload mr-2"></i>Restore Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-3 mt-1"></i>
+                        <div>
+                            <h5 class="font-semibold text-yellow-800">Peringatan</h5>
+                            <p class="text-sm text-yellow-700">Proses restore akan mengganti semua data yang ada. Pastikan Anda telah membuat backup terlebih dahulu.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h5 class="font-semibold text-gray-900 mb-3">Riwayat Backup</h5>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-gray-900">backup_2024_01_15.json</p>
+                                <p class="text-sm text-gray-600">15 Januari 2024, 14:30</p>
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm">Download</button>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-gray-900">backup_2024_01_01.json</p>
+                                <p class="text-sm text-gray-600">1 Januari 2024, 09:00</p>
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm">Download</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUserRole = null;
+        let currentUser = null;
+
+        // Demo user accounts
+        const users = {
+            'admin': { password: 'admin123', role: 'admin', name: 'Admin Sistem' },
+            'pimpinan': { password: 'pimpinan123', role: 'pimpinan', name: 'Dr. Soekarno' },
+            'pegawai': { password: 'pegawai123', role: 'pegawai', name: 'Ahmad Wijaya' }
+        };
+
+        // Sample notifications data
+        let notifications = [
+            {
+                id: 1,
+                type: 'application',
+                title: 'Surat Izin Disetujui',
+                message: 'Surat izin cuti tahunan Anda telah disetujui oleh Dr. Soekarno',
+                time: '2 menit yang lalu',
+                timestamp: new Date(Date.now() - 2 * 60 * 1000),
+                read: false,
+                icon: 'fas fa-check-circle',
+                color: 'text-green-600',
+                bgColor: 'bg-green-50',
+                borderColor: 'border-green-200',
+                actionText: 'Lihat Detail',
+                actionFunction: 'viewApplication'
+            },
+            {
+                id: 2,
+                type: 'system',
+                title: 'Pemeliharaan Sistem',
+                message: 'Sistem akan menjalani pemeliharaan pada Minggu, 21 Januari 2024 pukul 02:00 WIB',
+                time: '1 jam yang lalu',
+                timestamp: new Date(Date.now() - 60 * 60 * 1000),
+                read: false,
+                icon: 'fas fa-tools',
+                color: 'text-blue-600',
+                bgColor: 'bg-blue-50',
+                borderColor: 'border-blue-200',
+                actionText: 'Pelajari Lebih Lanjut',
+                actionFunction: 'viewSystemInfo'
+            },
+            {
+                id: 3,
+                type: 'reminder',
+                title: 'Pengingat Cuti',
+                message: 'Anda masih memiliki 8 hari cuti yang belum digunakan tahun ini',
+                time: '3 jam yang lalu',
+                timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
+                read: false,
+                icon: 'fas fa-calendar-alt',
+                color: 'text-yellow-600',
+                bgColor: 'bg-yellow-50',
+                borderColor: 'border-yellow-200',
+                actionText: 'Lihat Saldo Cuti',
+                actionFunction: 'showLeaveBalance'
+            },
+            {
+                id: 4,
+                type: 'application',
+                title: 'Surat Izin Baru',
+                message: 'Ahmad Wijaya mengajukan izin sakit selama 2 hari',
+                time: '5 jam yang lalu',
+                timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000),
+                read: true,
+                icon: 'fas fa-file-medical',
+                color: 'text-purple-600',
+                bgColor: 'bg-purple-50',
+                borderColor: 'border-purple-200',
+                actionText: 'Review Sekarang',
+                actionFunction: 'reviewApplications'
+            },
+            {
+                id: 5,
+                type: 'system',
+                title: 'Backup Berhasil',
+                message: 'Backup otomatis sistem telah berhasil dilakukan',
+                time: '1 hari yang lalu',
+                timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                read: true,
+                icon: 'fas fa-database',
+                color: 'text-green-600',
+                bgColor: 'bg-green-50',
+                borderColor: 'border-green-200',
+                actionText: 'Lihat Log',
+                actionFunction: 'viewBackupLog'
+            },
+            {
+                id: 6,
+                type: 'reminder',
+                title: 'Update Profil',
+                message: 'Mohon perbarui informasi kontak Anda di profil',
+                time: '2 hari yang lalu',
+                timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+                read: true,
+                icon: 'fas fa-user-edit',
+                color: 'text-blue-600',
+                bgColor: 'bg-blue-50',
+                borderColor: 'border-blue-200',
+                actionText: 'Update Profil',
+                actionFunction: 'showEmployeeProfile'
+            }
+        ];
+
+        // Document numbering system
+        let documentSettings = {
+            prefix: '800.1.11.5',
+            suffix: '2025',
+            separator: '/',
+            nextNumber: 1,
+            resetYearly: true,
+            lastResetYear: 2025
+        };
+
+        // Sample data
+        let sampleApplications = [
+            { id: 1, name: 'Ahmad Wijaya', type: 'Izin Sakit', date: '2024-01-15', status: 'pending', duration: '2 hari', reason: 'Demam tinggi dan perlu istirahat', startDate: '2024-01-16', endDate: '2024-01-17', phone: '081234567890', position: 'Staff Pertanian', documentNumber: '800.1.11.5/001/2025' },
+            { id: 2, name: 'Siti Nurhaliza', type: 'Cuti Tahunan', date: '2024-01-14', status: 'approved', duration: '5 hari', reason: 'Liburan keluarga', startDate: '2024-01-20', endDate: '2024-01-24', phone: '081234567891', position: 'Koordinator Lapangan', documentNumber: '800.1.11.5/002/2025' },
+            { id: 3, name: 'Budi Santoso', type: 'Dinas Luar', date: '2024-01-13', status: 'rejected', duration: '1 hari', reason: 'Pelatihan di Jakarta', startDate: '2024-01-18', endDate: '2024-01-18', phone: '081234567892', position: 'Supervisor', documentNumber: '800.1.11.5/003/2025' },
+            { id: 4, name: 'Maya Sari', type: 'Izin Pribadi', date: '2024-01-12', status: 'approved', duration: '1 hari', reason: 'Urusan keluarga', startDate: '2024-01-19', endDate: '2024-01-19', phone: '081234567893', position: 'Admin', documentNumber: '800.1.11.5/004/2025' },
+            { id: 5, name: 'Andi Pratama', type: 'Izin Sakit', date: '2024-01-11', status: 'pending', duration: '3 hari', reason: 'Sakit flu dan batuk', startDate: '2024-01-21', endDate: '2024-01-23', phone: '081234567894', position: 'Staff Teknis', documentNumber: null },
+            { id: 6, name: 'Dewi Lestari', type: 'Cuti Tahunan', date: '2024-01-10', status: 'pending', duration: '7 hari', reason: 'Mudik lebaran', startDate: '2024-01-25', endDate: '2024-01-31', phone: '081234567895', position: 'Analis Data', documentNumber: null },
+            { id: 7, name: 'Rudi Hermawan', type: 'Dinas Luar', date: '2024-01-09', status: 'pending', duration: '2 hari', reason: 'Seminar nasional pertanian', startDate: '2024-01-22', endDate: '2024-01-23', phone: '081234567896', position: 'Peneliti', documentNumber: null },
+            { id: 8, name: 'Lina Marlina', type: 'Izin Pribadi', date: '2024-01-08', status: 'pending', duration: '1 hari', reason: 'Mengurus dokumen penting', startDate: '2024-01-20', endDate: '2024-01-20', phone: '081234567897', position: 'Sekretaris', documentNumber: null }
+        ];
+
+        // Sample employee data
+        const employeeData = [
+            { id: 1, name: 'Ahmad Wijaya', position: 'Staff Pertanian', phone: '081234567890', email: 'ahmad@dinaspertanian.go.id', leaveUsed: 4, leaveRemaining: 8, status: 'Aktif' },
+            { id: 2, name: 'Siti Nurhaliza', position: 'Koordinator Lapangan', phone: '081234567891', email: 'siti@dinaspertanian.go.id', leaveUsed: 6, leaveRemaining: 6, status: 'Aktif' },
+            { id: 3, name: 'Budi Santoso', position: 'Supervisor', phone: '081234567892', email: 'budi@dinaspertanian.go.id', leaveUsed: 2, leaveRemaining: 10, status: 'Nonaktif' },
+            { id: 4, name: 'Maya Sari', position: 'Admin', phone: '081234567893', email: 'maya@dinaspertanian.go.id', leaveUsed: 3, leaveRemaining: 9, status: 'Aktif' },
+            { id: 5, name: 'Andi Pratama', position: 'Staff Teknis', phone: '081234567894', email: 'andi@dinaspertanian.go.id', leaveUsed: 5, leaveRemaining: 7, status: 'Aktif' },
+            { id: 6, name: 'Dewi Lestari', position: 'Analis Data', phone: '081234567895', email: 'dewi@dinaspertanian.go.id', leaveUsed: 1, leaveRemaining: 11, status: 'Aktif' },
+            { id: 7, name: 'Rudi Hermawan', position: 'Peneliti', phone: '081234567896', email: 'rudi@dinaspertanian.go.id', leaveUsed: 7, leaveRemaining: 5, status: 'Aktif' },
+            { id: 8, name: 'Lina Marlina', position: 'Sekretaris', phone: '081234567897', email: 'lina@dinaspertanian.go.id', leaveUsed: 2, leaveRemaining: 10, status: 'Aktif' }
+        ];
+
+        let currentApplicationId = null;
+
+        // Document numbering functions
+        function generateDocumentNumber() {
+            const currentYear = new Date().getFullYear();
+
+            // Reset counter if new year and resetYearly is enabled
+            if (documentSettings.resetYearly && currentYear > documentSettings.lastResetYear) {
+                documentSettings.nextNumber = 1;
+                documentSettings.lastResetYear = currentYear;
+                documentSettings.suffix = currentYear.toString();
+            }
+
+            const paddedNumber = documentSettings.nextNumber.toString().padStart(3, '0');
+            const documentNumber = `${documentSettings.prefix}${documentSettings.separator}${paddedNumber}${documentSettings.separator}${documentSettings.suffix}`;
+
+            documentSettings.nextNumber++;
+
+            return documentNumber;
+        }
+
+        function updateDocumentSettings(newSettings) {
+            documentSettings = { ...documentSettings, ...newSettings };
+            showNotification('Format nomor surat berhasil diperbarui', 'success');
+        }
+
+        function previewDocumentNumber() {
+            const currentYear = new Date().getFullYear();
+            let previewNumber = documentSettings.nextNumber;
+            let previewSuffix = documentSettings.suffix;
+
+            if (documentSettings.resetYearly && currentYear > documentSettings.lastResetYear) {
+                previewNumber = 1;
+                previewSuffix = currentYear.toString();
+            }
+
+            const paddedNumber = previewNumber.toString().padStart(3, '0');
+            return `${documentSettings.prefix}${documentSettings.separator}${paddedNumber}${documentSettings.separator}${previewSuffix}`;
+        }
+
+        // Role configurations
+        const roleConfigs = {
+            admin: {
+                name: 'Admin Sistem',
+                role: 'Administrator',
+                icon: 'fas fa-user-shield',
+                stats: [
+                    { title: 'Total Pengguna', value: '45', icon: 'fas fa-users', color: 'blue' },
+                    { title: 'Surat Aktif', value: '12', icon: 'fas fa-file-alt', color: 'green' },
+                    { title: 'Menunggu Review', value: '8', icon: 'fas fa-clock', color: 'yellow' },
+                    { title: 'Sistem Status', value: 'Online', icon: 'fas fa-server', color: 'purple' }
+                ],
+                actions: [
+                    { title: 'Kelola Pengguna', icon: 'fas fa-users-cog', action: 'manageUsers' },
+                    { title: 'Format Nomor Surat', icon: 'fas fa-file-signature', action: 'documentSettings' },
+                    { title: 'Laporan Sistem', icon: 'fas fa-chart-bar', action: 'systemReports' },
+                    { title: 'Pengaturan', icon: 'fas fa-cog', action: 'settings' },
+                    { title: 'Backup Data', icon: 'fas fa-database', action: 'backup' }
+                ]
+            },
+            pimpinan: {
+                name: 'Dr. Soekarno',
+                role: 'Kepala Dinas',
+                icon: 'fas fa-user-tie',
+                stats: [
+                    { title: 'Perlu Persetujuan', value: '8', icon: 'fas fa-clipboard-check', color: 'red' },
+                    { title: 'Disetujui Bulan Ini', value: '24', icon: 'fas fa-check-circle', color: 'green' },
+                    { title: 'Total Pegawai', value: '45', icon: 'fas fa-users', color: 'blue' },
+                    { title: 'Rata-rata Proses', value: '2.3 hari', icon: 'fas fa-clock', color: 'yellow' }
+                ],
+                actions: [
+                    { title: 'Review Izin', icon: 'fas fa-clipboard-check', action: 'reviewApplications' },
+                    { title: 'Laporan Bulanan', icon: 'fas fa-chart-line', action: 'monthlyReport' },
+                    { title: 'Daftar Pegawai', icon: 'fas fa-address-book', action: 'employeeList' },
+                    { title: 'Statistik Izin', icon: 'fas fa-analytics', action: 'statistics' }
+                ]
+            },
+            pegawai: {
+                name: 'Ahmad Wijaya',
+                role: 'Staff Pertanian',
+                icon: 'fas fa-user',
+                stats: [
+                    { title: 'Izin Tersisa', value: '8 hari', icon: 'fas fa-calendar-day', color: 'green' },
+                    { title: 'Izin Digunakan', value: '4 hari', icon: 'fas fa-calendar-check', color: 'blue' },
+                    { title: 'Menunggu Approval', value: '1', icon: 'fas fa-hourglass-half', color: 'yellow' },
+                    { title: 'Status Terakhir', value: 'Disetujui', icon: 'fas fa-check-circle', color: 'green' }
+                ],
+                actions: [
+                    { title: 'Ajukan Izin Baru', icon: 'fas fa-plus-circle', action: 'newApplication' },
+                    { title: 'Riwayat Izin', icon: 'fas fa-history', action: 'history' },
+                    { title: 'Sisa Cuti', icon: 'fas fa-calendar-alt', action: 'leaveBalance' },
+                    { title: 'Profil Saya', icon: 'fas fa-user-edit', action: 'profile' }
+                ]
+            }
+        };
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Show loading state
+            showLoading(true);
+
+            // Simulate API call delay
+            setTimeout(() => {
+                if (users[username] && users[username].password === password) {
+                    // Successful login
+                    currentUser = username;
+                    currentUserRole = users[username].role;
+
+                    // Update logged in user display
+                    document.getElementById('loggedInUser').textContent = users[username].name;
+
+                    // Hide login page and show dashboard
+                    document.getElementById('loginPage').classList.add('hidden');
+                    document.getElementById('dashboardPage').classList.remove('hidden');
+
+                    // Update dashboard
+                    updateDashboard();
+
+                    // Show online users widget for admin
+                    if (currentUserRole === 'admin') {
+                        showOnlineUsersWidget();
+                    }
+
+                    showLoading(false);
+                } else {
+                    // Failed login
+                    showLoading(false);
+                    showError('Username atau password salah!');
+                }
+            }, 1000);
+        });
+
+        function showLoading(show) {
+            const button = document.getElementById('loginButtonText');
+            const spinner = document.getElementById('loginSpinner');
+
+            if (show) {
+                button.textContent = 'Memproses...';
+                spinner.classList.remove('hidden');
+            } else {
+                button.textContent = 'Masuk';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        function showError(message) {
+            // Create error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4';
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${message}`;
+
+            // Insert before form
+            const form = document.getElementById('loginForm');
+            form.parentNode.insertBefore(errorDiv, form);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 3000);
+        }
+
+        function quickLogin(role) {
+            document.getElementById('username').value = role;
+            document.getElementById('password').value = role + '123';
+        }
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('passwordToggle');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.className = 'fas fa-eye';
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            currentUserRole = null;
+
+            // Clear form
+            document.getElementById('loginForm').reset();
+
+            // Show login page and hide dashboard
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('dashboardPage').classList.add('hidden');
+        }
+
+        function updateDashboard() {
+            const config = roleConfigs[currentUserRole];
+
+            // Update profile
+            document.getElementById('profileName').textContent = config.name;
+            document.getElementById('profileRole').textContent = config.role;
+            document.getElementById('profileIcon').className = config.icon + ' text-white text-2xl';
+
+            // Update stats
+            const statsContainer = document.getElementById('statsCards');
+            statsContainer.innerHTML = config.stats.map(stat => `
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-lg bg-${stat.color}-100 text-${stat.color}-600">
+                            <i class="${stat.icon} text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">${stat.title}</p>
+                            <p class="text-2xl font-bold text-gray-900">${stat.value}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Update quick actions
+            const actionsContainer = document.getElementById('quickActions');
+            actionsContainer.innerHTML = config.actions.map(action => `
+                <button onclick="handleAction('${action.action}')" class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <i class="${action.icon} text-blue-600 text-xl mr-3"></i>
+                    <span class="font-medium text-gray-900">${action.title}</span>
+                </button>
+            `).join('');
+
+            // Update recent applications
+            updateRecentApplications();
+        }
+
+        function updateRecentApplications() {
+            const container = document.getElementById('recentApplications');
+            let applications = sampleApplications;
+
+            if (currentUserRole === 'pegawai') {
+                applications = applications.filter(app => app.name === 'Ahmad Wijaya');
+            } else if (currentUserRole === 'pimpinan') {
+                applications = applications.filter(app => app.status === 'pending');
+            }
+
+            container.innerHTML = applications.map(app => {
+                const statusColors = {
+                    pending: 'bg-yellow-100 text-yellow-800',
+                    approved: 'bg-green-100 text-green-800',
+                    rejected: 'bg-red-100 text-red-800'
+                };
+
+                const statusText = {
+                    pending: 'Menunggu',
+                    approved: 'Disetujui',
+                    rejected: 'Ditolak'
+                };
+
+                return `
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-file-alt text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900">${app.name}</p>
+                                <p class="text-sm text-gray-600">${app.type} • ${app.duration}</p>
+                                ${app.documentNumber ? `<p class="text-xs text-blue-600 font-mono">${app.documentNumber}</p>` : ''}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusColors[app.status]}">
+                                ${statusText[app.status]}
+                            </span>
+                            <p class="text-xs text-gray-500 mt-1">${app.date}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function handleAction(action) {
+            switch(action) {
+                case 'newApplication':
+                    showNewApplication();
+                    break;
+                case 'history':
+                    showApplicationHistory();
+                    break;
+                case 'leaveBalance':
+                    showLeaveBalance();
+                    break;
+                case 'profile':
+                    showEmployeeProfile();
+                    break;
+                case 'reviewApplications':
+                    showReviewApplications();
+                    break;
+                case 'monthlyReport':
+                    showMonthlyReport();
+                    break;
+                case 'employeeList':
+                    showEmployeeList();
+                    break;
+                case 'statistics':
+                    showStatistics();
+                    break;
+                case 'manageUsers':
+                    showUserManagement();
+                    break;
+                case 'systemReports':
+                    showSystemReports();
+                    break;
+                case 'settings':
+                    showSettings();
+                    break;
+                case 'backup':
+                    showBackupData();
+                    break;
+                case 'documentSettings':
+                    showDocumentSettings();
+                    break;
+                default:
+                    alert(`Membuka ${action}...`);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('applicationModal').classList.add('hidden');
+        }
+
+        function closeAllModals() {
+            const modals = [
+                'userManagementModal',
+                'systemReportsModal',
+                'settingsModal',
+                'backupModal',
+                'addUserModal',
+                'reviewApplicationsModal',
+                'monthlyReportModal',
+                'employeeListModal',
+                'statisticsModal',
+                'newApplicationModal',
+                'applicationHistoryModal',
+                'leaveBalanceModal',
+                'employeeProfileModal',
+                'onlineUsersModal',
+                'notificationsModal',
+                'documentSettingsModal'
+            ];
+
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
+
+        // Notification Functions
+        function showNotifications() {
+            document.getElementById('notificationsModal').classList.remove('hidden');
+            populateNotifications();
+            updateNotificationBadge();
+        }
+
+        function populateNotifications() {
+            const container = document.getElementById('notificationsList');
+            const noNotificationsDiv = document.getElementById('noNotifications');
+            const typeFilter = document.getElementById('notificationFilter').value;
+            const statusFilter = document.getElementById('notificationStatus').value;
+
+            let filteredNotifications = notifications.filter(notification => {
+                const matchesType = !typeFilter || notification.type === typeFilter;
+                const matchesStatus = !statusFilter ||
+                    (statusFilter === 'read' && notification.read) ||
+                    (statusFilter === 'unread' && !notification.read);
+                return matchesType && matchesStatus;
+            });
+
+            // Sort by timestamp (newest first)
+            filteredNotifications.sort((a, b) => b.timestamp - a.timestamp);
+
+            if (filteredNotifications.length === 0) {
+                container.classList.add('hidden');
+                noNotificationsDiv.classList.remove('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            noNotificationsDiv.classList.add('hidden');
+
+            container.innerHTML = filteredNotifications.map(notification => {
+                const readClass = notification.read ? 'opacity-75' : '';
+                const readIndicator = notification.read ? '' : '<div class="w-2 h-2 bg-blue-500 rounded-full"></div>';
+
+                return `
+                    <div class="flex items-start p-4 border ${notification.borderColor} ${notification.bgColor} rounded-lg hover:shadow-md transition-shadow ${readClass}" onclick="markAsRead(${notification.id})">
+                        <div class="flex-shrink-0 mr-4">
+                            <div class="w-10 h-10 ${notification.bgColor} rounded-full flex items-center justify-center">
+                                <i class="${notification.icon} ${notification.color}"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-semibold text-gray-900 mb-1">${notification.title}</h4>
+                                    <p class="text-sm text-gray-700 mb-2">${notification.message}</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-500">${notification.time}</span>
+                                        ${notification.actionText ? `
+                                            <button onclick="event.stopPropagation(); handleNotificationAction('${notification.actionFunction}', ${notification.id})" class="text-xs ${notification.color} hover:underline font-medium">
+                                                ${notification.actionText}
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex items-center ml-4">
+                                    ${readIndicator}
+                                    <button onclick="event.stopPropagation(); deleteNotification(${notification.id})" class="ml-2 text-gray-400 hover:text-red-600">
+                                        <i class="fas fa-times text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateUnreadCount();
+        }
+
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notificationBadge');
+            const unreadCount = notifications.filter(n => !n.read).length;
+
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function updateUnreadCount() {
+            const unreadCountElement = document.getElementById('unreadCount');
+            const unreadCount = notifications.filter(n => !n.read).length;
+
+            if (unreadCount > 0) {
+                unreadCountElement.textContent = `${unreadCount} belum dibaca`;
+                unreadCountElement.classList.remove('hidden');
+            } else {
+                unreadCountElement.textContent = 'Semua sudah dibaca';
+                unreadCountElement.classList.remove('bg-red-100', 'text-red-800');
+                unreadCountElement.classList.add('bg-green-100', 'text-green-800');
+            }
+        }
+
+        function markAsRead(notificationId) {
+            const notification = notifications.find(n => n.id === notificationId);
+            if (notification && !notification.read) {
+                notification.read = true;
+                populateNotifications();
+                updateNotificationBadge();
+            }
+        }
+
+        function markAllAsRead() {
+            notifications.forEach(notification => {
+                notification.read = true;
+            });
+            populateNotifications();
+            updateNotificationBadge();
+            showNotification('Semua notifikasi telah ditandai sebagai dibaca', 'success');
+        }
+
+        function deleteNotification(notificationId) {
+            const index = notifications.findIndex(n => n.id === notificationId);
+            if (index > -1) {
+                notifications.splice(index, 1);
+                populateNotifications();
+                updateNotificationBadge();
+                showNotification('Notifikasi berhasil dihapus', 'success');
+            }
+        }
+
+        function clearAllNotifications() {
+            if (confirm('Apakah Anda yakin ingin menghapus semua notifikasi?')) {
+                // Clear all notifications
+                notifications.splice(0, notifications.length);
+
+                // Update the display immediately
+                populateNotifications();
+                updateNotificationBadge();
+
+                // Show success message
+                showNotification('Semua notifikasi berhasil dihapus', 'success');
+
+                // Close notifications modal after a short delay
+                setTimeout(() => {
+                    closeAllModals();
+                }, 1500);
+            }
+        }
+
+        function handleNotificationAction(actionFunction, notificationId = null) {
+            // Mark notification as read if ID is provided
+            if (notificationId) {
+                markAsRead(notificationId);
+            }
+
+            closeAllModals();
+
+            switch(actionFunction) {
+                case 'viewApplication':
+                    showApplicationHistory();
+                    break;
+                case 'viewSystemInfo':
+                    showSettings();
+                    break;
+                case 'showLeaveBalance':
+                    showLeaveBalance();
+                    break;
+                case 'reviewApplications':
+                    showReviewApplications();
+                    break;
+                case 'viewBackupLog':
+                    showBackupData();
+                    break;
+                case 'showEmployeeProfile':
+                    showEmployeeProfile();
+                    break;
+                default:
+                    showNotification(`Membuka ${actionFunction}...`, 'info');
+            }
+        }
+
+        function addNotification(type, title, message, actionText = null, actionFunction = null) {
+            const typeConfig = {
+                application: { icon: 'fas fa-file-alt', color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
+                system: { icon: 'fas fa-cog', color: 'text-gray-600', bgColor: 'bg-gray-50', borderColor: 'border-gray-200' },
+                reminder: { icon: 'fas fa-bell', color: 'text-yellow-600', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200' },
+                success: { icon: 'fas fa-check-circle', color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-200' },
+                error: { icon: 'fas fa-exclamation-circle', color: 'text-red-600', bgColor: 'bg-red-50', borderColor: 'border-red-200' }
+            };
+
+            const config = typeConfig[type] || typeConfig.system;
+
+            const newNotification = {
+                id: Math.max(...notifications.map(n => n.id), 0) + 1,
+                type: type,
+                title: title,
+                message: message,
+                time: 'Baru saja',
+                timestamp: new Date(),
+                read: false,
+                icon: config.icon,
+                color: config.color,
+                bgColor: config.bgColor,
+                borderColor: config.borderColor,
+                actionText: actionText,
+                actionFunction: actionFunction
+            };
+
+            notifications.unshift(newNotification);
+            updateNotificationBadge();
+
+            // If notifications modal is open, refresh it
+            if (!document.getElementById('notificationsModal').classList.contains('hidden')) {
+                populateNotifications();
+            }
+        }
+
+        function closeApplicationDetail() {
+            document.getElementById('applicationDetailModal').classList.add('hidden');
+            // Show the review modal again
+            document.getElementById('reviewApplicationsModal').classList.remove('hidden');
+        }
+
+        function closeAddUserModal() {
+            document.getElementById('addUserModal').classList.add('hidden');
+            document.getElementById('userForm').reset();
+            // Reset password placeholder
+            document.getElementById('userPassword').placeholder = '';
+            // Show the user management modal again
+            document.getElementById('userManagementModal').classList.remove('hidden');
+        }
+
+        // Sample user data for management
+        let allUsers = [
+            { id: 1, name: 'Admin Sistem', username: 'admin', role: 'admin', status: 'Aktif', lastLogin: '15 Jan 2024, 14:30', email: 'admin@dinaspertanian.go.id' },
+            { id: 2, name: 'Dr. Soekarno', username: 'pimpinan', role: 'pimpinan', status: 'Aktif', lastLogin: '15 Jan 2024, 09:15', email: 'pimpinan@dinaspertanian.go.id' },
+            { id: 3, name: 'Ahmad Wijaya', username: 'pegawai', role: 'pegawai', status: 'Aktif', lastLogin: '14 Jan 2024, 16:45', email: 'ahmad@dinaspertanian.go.id' },
+            { id: 4, name: 'Siti Nurhaliza', username: 'siti', role: 'pegawai', status: 'Aktif', lastLogin: '14 Jan 2024, 11:20', email: 'siti@dinaspertanian.go.id' },
+            { id: 5, name: 'Budi Santoso', username: 'budi', role: 'pegawai', status: 'Nonaktif', lastLogin: '10 Jan 2024, 08:30', email: 'budi@dinaspertanian.go.id' }
+        ];
+
+        let editingUserId = null;
+
+        function showUserManagement() {
+            document.getElementById('userManagementModal').classList.remove('hidden');
+            populateUserTable();
+        }
+
+        function populateUserTable() {
+            const tbody = document.getElementById('userTableBody');
+            const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+
+            let filteredUsers = allUsers.filter(user => {
+                const matchesSearch = user.name.toLowerCase().includes(searchTerm) ||
+                                    user.username.toLowerCase().includes(searchTerm);
+                const matchesRole = !roleFilter || user.role === roleFilter;
+                return matchesSearch && matchesRole;
+            });
+
+            tbody.innerHTML = filteredUsers.map(user => {
+                const statusColor = user.status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                const roleIcons = {
+                    admin: 'fas fa-user-shield text-blue-600',
+                    pimpinan: 'fas fa-user-tie text-green-600',
+                    pegawai: 'fas fa-user text-purple-600'
+                };
+
+                return `
+                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                        <td class="p-4">
+                            <div class="flex items-center">
+                                <i class="${roleIcons[user.role]} mr-3"></i>
+                                <div>
+                                    <p class="font-medium text-gray-900">${user.name}</p>
+                                    <p class="text-sm text-gray-600">${user.email}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 text-gray-900">${user.username}</td>
+                        <td class="p-4">
+                            <span class="capitalize px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                ${user.role}
+                            </span>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
+                                ${user.status}
+                            </span>
+                        </td>
+                        <td class="p-4 text-gray-600 text-sm">${user.lastLogin}</td>
+                        <td class="p-4">
+                            <div class="flex space-x-2">
+                                <button onclick="editUser(${user.id})" class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-edit mr-1"></i>Edit
+                                </button>
+                                <button onclick="toggleUserStatus(${user.id})" class="text-yellow-600 hover:text-yellow-800 text-sm">
+                                    <i class="fas fa-toggle-on mr-1"></i>${user.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}
+                                </button>
+                                <button onclick="deleteUser(${user.id})" class="text-red-600 hover:text-red-800 text-sm">
+                                    <i class="fas fa-trash mr-1"></i>Hapus
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function showAddUserForm() {
+            editingUserId = null;
+            document.getElementById('userFormTitle').textContent = 'Tambah Pengguna Baru';
+            document.getElementById('userForm').reset();
+            // Don't close other modals, just show the add user modal
+            document.getElementById('addUserModal').classList.remove('hidden');
+        }
+
+        function editUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (user) {
+                editingUserId = userId;
+                document.getElementById('userFormTitle').textContent = 'Edit Pengguna';
+                document.getElementById('userName').value = user.name;
+                document.getElementById('userUsername').value = user.username;
+                document.getElementById('userPassword').value = '';
+                document.getElementById('userPassword').placeholder = 'Kosongkan jika tidak ingin mengubah password';
+                document.getElementById('userRole').value = user.role;
+                document.getElementById('userEmail').value = user.email;
+                // Don't close other modals, just show the edit modal
+                document.getElementById('addUserModal').classList.remove('hidden');
+            }
+        }
+
+        function toggleUserStatus(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (user) {
+                user.status = user.status === 'Aktif' ? 'Nonaktif' : 'Aktif';
+                populateUserTable();
+                showNotification(`Status ${user.name} berhasil diubah menjadi ${user.status}`, 'success');
+            }
+        }
+
+        function deleteUser(userId) {
+            if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
+                const userIndex = allUsers.findIndex(u => u.id === userId);
+                if (userIndex > -1) {
+                    const deletedUser = allUsers.splice(userIndex, 1)[0];
+                    populateUserTable();
+                    showNotification(`Pengguna ${deletedUser.name} berhasil dihapus`, 'success');
+                }
+            }
+        }
+
+        // User form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const userForm = document.getElementById('userForm');
+            if (userForm) {
+                userForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = {
+                        name: document.getElementById('userName').value,
+                        username: document.getElementById('userUsername').value,
+                        password: document.getElementById('userPassword').value,
+                        role: document.getElementById('userRole').value,
+                        email: document.getElementById('userEmail').value
+                    };
+
+                    if (editingUserId) {
+                        // Update existing user
+                        const user = allUsers.find(u => u.id === editingUserId);
+                        if (user) {
+                            user.name = formData.name;
+                            user.username = formData.username;
+                            user.role = formData.role;
+                            user.email = formData.email;
+                            if (formData.password) {
+                                // Update password logic would go here
+                            }
+                            showNotification('Pengguna berhasil diperbarui', 'success');
+                        }
+                    } else {
+                        // Add new user
+                        const newUser = {
+                            id: Math.max(...allUsers.map(u => u.id)) + 1,
+                            ...formData,
+                            status: 'Aktif',
+                            lastLogin: 'Belum pernah login'
+                        };
+                        allUsers.push(newUser);
+                        showNotification('Pengguna baru berhasil ditambahkan', 'success');
+                    }
+
+                    populateUserTable();
+                    closeAddUserModal();
+                });
+            }
+        });
+
+        // Search and filter functionality
+        document.getElementById('userSearch').addEventListener('input', populateUserTable);
+        document.getElementById('roleFilter').addEventListener('change', populateUserTable);
+
+        function showSystemReports() {
+            document.getElementById('systemReportsModal').classList.remove('hidden');
+        }
+
+        function showSettings() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function showBackupData() {
+            document.getElementById('backupModal').classList.remove('hidden');
+        }
+
+        function showDocumentSettings() {
+            document.getElementById('documentSettingsModal').classList.remove('hidden');
+            populateDocumentSettings();
+        }
+
+        function populateDocumentSettings() {
+            document.getElementById('docPrefix').value = documentSettings.prefix;
+            document.getElementById('docSuffix').value = documentSettings.suffix;
+            document.getElementById('docSeparator').value = documentSettings.separator;
+            document.getElementById('docNextNumber').value = documentSettings.nextNumber;
+            document.getElementById('docResetYearly').checked = documentSettings.resetYearly;
+
+            updateCurrentFormatDisplay();
+            updatePreview();
+        }
+
+        function updateCurrentFormatDisplay() {
+            const currentFormat = previewDocumentNumber();
+            document.getElementById('currentDocumentFormat').textContent = currentFormat;
+        }
+
+        function updatePreview() {
+            const prefix = document.getElementById('docPrefix').value || documentSettings.prefix;
+            const suffix = document.getElementById('docSuffix').value || documentSettings.suffix;
+            const separator = document.getElementById('docSeparator').value || documentSettings.separator;
+            const nextNumber = document.getElementById('docNextNumber').value || documentSettings.nextNumber;
+
+            const paddedNumber = nextNumber.toString().padStart(3, '0');
+            const preview = `${prefix}${separator}${paddedNumber}${separator}${suffix}`;
+
+            document.getElementById('formatPreview').textContent = preview;
+        }
+
+        function resetToDefault() {
+            if (confirm('Apakah Anda yakin ingin mengembalikan ke pengaturan default?')) {
+                documentSettings = {
+                    prefix: '800.1.11.5',
+                    suffix: '2025',
+                    separator: '/',
+                    nextNumber: 1,
+                    resetYearly: true,
+                    lastResetYear: 2025
+                };
+                populateDocumentSettings();
+                showNotification('Pengaturan berhasil dikembalikan ke default', 'success');
+            }
+        }
+
+        function exportReport(format) {
+            const reportData = {
+                totalApplications: 1247,
+                approved: 1089,
+                rejected: 158,
+                monthly: [
+                    { month: 'Januari 2024', count: 124 },
+                    { month: 'Februari 2024', count: 98 },
+                    { month: 'Maret 2024', count: 156 }
+                ],
+                leaveTypes: [
+                    { type: 'Cuti Tahunan', percentage: 45 },
+                    { type: 'Izin Sakit', percentage: 28 },
+                    { type: 'Dinas Luar', percentage: 18 },
+                    { type: 'Izin Pribadi', percentage: 9 }
+                ]
+            };
+
+            if (format === 'pdf') {
+                // Create PDF using jsPDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Set font
+                doc.setFont('helvetica');
+
+                // Header
+                doc.setFontSize(20);
+                doc.setTextColor(40, 40, 40);
+                doc.text('LAPORAN SISTEM SURAT IZIN', 105, 25, { align: 'center' });
+
+                doc.setFontSize(16);
+                doc.text('Dinas Pertanian', 105, 35, { align: 'center' });
+
+                doc.setFontSize(12);
+                doc.text(`Periode: ${new Date().getFullYear()}`, 105, 45, { align: 'center' });
+
+                // Line separator
+                doc.setLineWidth(0.5);
+                doc.line(20, 55, 190, 55);
+
+                // Overview Statistics
+                doc.setFontSize(16);
+                doc.setTextColor(0, 0, 0);
+                doc.text('RINGKASAN KESELURUHAN', 20, 70);
+
+                let yPos = 85;
+
+                // Main statistics
+                const mainStats = [
+                    { label: 'Total Surat Izin', value: reportData.totalApplications, color: [59, 130, 246] },
+                    { label: 'Disetujui', value: reportData.approved, color: [34, 197, 94] },
+                    { label: 'Ditolak', value: reportData.rejected, color: [239, 68, 68] },
+                    { label: 'Tingkat Persetujuan', value: `${Math.round((reportData.approved / reportData.totalApplications) * 100)}%`, color: [168, 85, 247] }
+                ];
+
+                mainStats.forEach((stat, index) => {
+                    const xPos = 20 + (index % 2) * 85;
+                    const yPosition = yPos + Math.floor(index / 2) * 25;
+
+                    // Draw colored rectangle
+                    doc.setFillColor(stat.color[0], stat.color[1], stat.color[2]);
+                    doc.rect(xPos, yPosition - 8, 80, 20, 'F');
+
+                    // Add white text
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(10);
+                    doc.text(stat.label, xPos + 5, yPosition - 2);
+                    doc.setFontSize(14);
+                    doc.text(stat.value.toString(), xPos + 5, yPosition + 8);
+                });
+
+                // Reset text color
+                doc.setTextColor(0, 0, 0);
+                yPos += 60;
+
+                // Monthly Statistics
+                doc.setFontSize(16);
+                doc.text('STATISTIK BULANAN', 20, yPos);
+                yPos += 15;
+
+                doc.setFontSize(12);
+                reportData.monthly.forEach((item) => {
+                    doc.text(`${item.month}:`, 25, yPos);
+                    doc.text(`${item.count} surat`, 80, yPos);
+                    yPos += 10;
+                });
+
+                yPos += 10;
+
+                // Leave Types Distribution
+                doc.setFontSize(16);
+                doc.text('DISTRIBUSI JENIS IZIN', 20, yPos);
+                yPos += 15;
+
+                doc.setFontSize(12);
+                reportData.leaveTypes.forEach((type) => {
+                    doc.text(`${type.type}:`, 25, yPos);
+                    doc.text(`${type.percentage}%`, 80, yPos);
+
+                    // Draw percentage bar
+                    const barWidth = (type.percentage / 100) * 60;
+                    doc.setFillColor(59, 130, 246);
+                    doc.rect(100, yPos - 5, barWidth, 8, 'F');
+                    doc.setDrawColor(200, 200, 200);
+                    doc.rect(100, yPos - 5, 60, 8);
+
+                    yPos += 15;
+                });
+
+                // Footer
+                doc.setFontSize(10);
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Laporan dibuat pada: ${new Date().toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}`, 20, 280);
+
+                doc.text('Dinas Pertanian - Sistem Manajemen Surat Izin', 105, 290, { align: 'center' });
+
+                // Save the PDF
+                const fileName = `Laporan_Sistem_${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+
+                showNotification('Laporan sistem PDF berhasil diunduh', 'success');
+            } else if (format === 'excel') {
+                // Create CSV export
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += "Laporan Sistem Surat Izin - Dinas Pertanian\n\n";
+                csvContent += "Ringkasan Keseluruhan\n";
+                csvContent += "Kategori,Jumlah\n";
+                csvContent += `Total Surat Izin,${reportData.totalApplications}\n`;
+                csvContent += `Disetujui,${reportData.approved}\n`;
+                csvContent += `Ditolak,${reportData.rejected}\n`;
+                csvContent += `Tingkat Persetujuan,${Math.round((reportData.approved / reportData.totalApplications) * 100)}%\n\n`;
+
+                csvContent += "Statistik Bulanan\n";
+                csvContent += "Bulan,Jumlah Surat\n";
+                csvContent += reportData.monthly.map(item => `${item.month},${item.count}`).join('\n');
+                csvContent += "\n\nDistribusi Jenis Izin\n";
+                csvContent += "Jenis Izin,Persentase\n";
+                csvContent += reportData.leaveTypes.map(type => `${type.type},${type.percentage}%`).join('\n');
+
+                const encodedUri = encodeURI(csvContent);
+                const a = document.createElement('a');
+                a.href = encodedUri;
+                a.download = `Laporan_Sistem_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                showNotification('Laporan sistem Excel berhasil diunduh', 'success');
+            }
+        }
+
+        function saveSettings() {
+            // Simulate saving settings
+            showNotification('Pengaturan berhasil disimpan', 'success');
+            closeAllModals();
+        }
+
+        function createBackup() {
+            const backupData = {
+                users: allUsers,
+                applications: sampleApplications,
+                settings: {
+                    institutionName: 'Dinas Pertanian',
+                    address: 'Jl. Raya Pertanian No. 123, Jakarta Selatan',
+                    email: 'admin@dinaspertanian.go.id'
+                },
+                timestamp: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showNotification('Backup berhasil dibuat dan diunduh', 'success');
+        }
+
+        function restoreBackup() {
+            const fileInput = document.getElementById('backupFile');
+            if (fileInput.files.length === 0) {
+                showNotification('Pilih file backup terlebih dahulu', 'error');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+
+                    if (confirm('Apakah Anda yakin ingin mengembalikan data dari backup ini? Semua data saat ini akan diganti.')) {
+                        // Restore data
+                        if (backupData.users) {
+                            allUsers = backupData.users;
+                        }
+
+                        showNotification('Data berhasil dipulihkan dari backup', 'success');
+                        closeAllModals();
+
+                        // Refresh current view if user management is open
+                        if (!document.getElementById('userManagementModal').classList.contains('hidden')) {
+                            populateUserTable();
+                        }
+                    }
+                } catch (error) {
+                    showNotification('File backup tidak valid', 'error');
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+
+            notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Update date
+        function updateDate() {
+            const now = new Date();
+            const options = { month: 'long', year: 'numeric' };
+            document.getElementById('currentDate').textContent = now.getDate();
+            document.getElementById('currentMonth').textContent = now.toLocaleDateString('id-ID', options);
+        }
+
+        // Pimpinan Functions
+        function showReviewApplications() {
+            document.getElementById('reviewApplicationsModal').classList.remove('hidden');
+            populateApplicationsToReview();
+        }
+
+        function populateApplicationsToReview() {
+            const container = document.getElementById('applicationsToReview');
+            const statusFilter = document.getElementById('statusFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+
+            let filteredApplications = sampleApplications.filter(app => {
+                const matchesStatus = !statusFilter || app.status === statusFilter;
+                const matchesType = !typeFilter || app.type === typeFilter;
+                return matchesStatus && matchesType;
+            });
+
+            const pendingCount = sampleApplications.filter(app => app.status === 'pending').length;
+            document.getElementById('pendingCount').textContent = pendingCount;
+
+            container.innerHTML = filteredApplications.map(app => {
+                const statusColors = {
+                    pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                    approved: 'bg-green-100 text-green-800 border-green-200',
+                    rejected: 'bg-red-100 text-red-800 border-red-200'
+                };
+
+                const statusText = {
+                    pending: 'Menunggu Review',
+                    approved: 'Disetujui',
+                    rejected: 'Ditolak'
+                };
+
+                const statusIcons = {
+                    pending: 'fas fa-clock',
+                    approved: 'fas fa-check-circle',
+                    rejected: 'fas fa-times-circle'
+                };
+
+                return `
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-user text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">${app.name}</h4>
+                                    <p class="text-sm text-gray-600">${app.position}</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full border ${statusColors[app.status]}">
+                                <i class="${statusIcons[app.status]} mr-1"></i>
+                                ${statusText[app.status]}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <p class="text-sm text-gray-600">Jenis Izin</p>
+                                <p class="font-medium">${app.type}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Durasi</p>
+                                <p class="font-medium">${app.duration}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Tanggal Mulai</p>
+                                <p class="font-medium">${app.startDate}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Tanggal Selesai</p>
+                                <p class="font-medium">${app.endDate}</p>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-sm text-gray-600">Alasan</p>
+                            <p class="text-gray-900">${app.reason}</p>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <p class="text-xs text-gray-500">Diajukan: ${app.date}</p>
+                            <button onclick="showApplicationDetail(${app.id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+                                Detail & Review
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showApplicationDetail(applicationId) {
+            const app = sampleApplications.find(a => a.id === applicationId);
+            if (!app) return;
+
+            currentApplicationId = applicationId;
+
+            // Close other modals first
+            closeAllModals();
+
+            const modal = document.getElementById('applicationDetailModal');
+            const content = document.getElementById('applicationDetailContent');
+
+            const statusColors = {
+                pending: 'bg-yellow-100 text-yellow-800',
+                approved: 'bg-green-100 text-green-800',
+                rejected: 'bg-red-100 text-red-800'
+            };
+
+            const statusText = {
+                pending: 'Menunggu Review',
+                approved: 'Disetujui',
+                rejected: 'Ditolak'
+            };
+
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-user text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold text-gray-900">${app.name}</h4>
+                                <p class="text-gray-600">${app.position}</p>
+                                <p class="text-sm text-gray-500">${app.phone}</p>
+                                ${app.documentNumber ? `<p class="text-sm text-blue-600 font-mono bg-blue-50 px-2 py-1 rounded mt-1">${app.documentNumber}</p>` : ''}
+                            </div>
+                        </div>
+                        <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full ${statusColors[app.status]}">
+                            ${statusText[app.status]}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Jenis Izin</label>
+                                <p class="mt-1 text-gray-900 font-semibold">${app.type}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tanggal Mulai</label>
+                                <p class="mt-1 text-gray-900">${app.startDate}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Durasi</label>
+                                <p class="mt-1 text-gray-900">${app.duration}</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tanggal Pengajuan</label>
+                                <p class="mt-1 text-gray-900">${app.date}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tanggal Selesai</label>
+                                <p class="mt-1 text-gray-900">${app.endDate}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Alasan Izin</label>
+                        <div class="mt-1 p-3 bg-gray-50 rounded-lg">
+                            <p class="text-gray-900">${app.reason}</p>
+                        </div>
+                    </div>
+
+                    ${app.status === 'pending' ? '' : `
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600">Status: <span class="font-semibold">${statusText[app.status]}</span></p>
+                            <p class="text-xs text-gray-500 mt-1">Diproses pada: ${new Date().toLocaleDateString('id-ID')}</p>
+                        </div>
+                    `}
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function approveApplication() {
+            if (currentApplicationId) {
+                const app = sampleApplications.find(a => a.id === currentApplicationId);
+                if (app) {
+                    app.status = 'approved';
+                    // Generate document number when approved
+                    if (!app.documentNumber) {
+                        app.documentNumber = generateDocumentNumber();
+                    }
+                    showNotification(`Surat izin ${app.name} berhasil disetujui dengan nomor ${app.documentNumber}`, 'success');
+
+                    // Add notification for the employee
+                    if (currentUserRole === 'pimpinan') {
+                        addNotification('application', 'Surat Izin Disetujui',
+                            `Surat izin ${app.type} Anda telah disetujui oleh ${roleConfigs[currentUserRole].name}`,
+                            'Lihat Detail', 'viewApplication');
+                    }
+
+                    // Close detail modal and refresh review list
+                    document.getElementById('applicationDetailModal').classList.add('hidden');
+                    document.getElementById('reviewApplicationsModal').classList.remove('hidden');
+                    populateApplicationsToReview();
+                    updateRecentApplications();
+                }
+            }
+        }
+
+        function rejectApplication() {
+            if (currentApplicationId) {
+                const app = sampleApplications.find(a => a.id === currentApplicationId);
+                if (app) {
+                    app.status = 'rejected';
+                    showNotification(`Surat izin ${app.name} ditolak`, 'error');
+
+                    // Add notification for the employee
+                    if (currentUserRole === 'pimpinan') {
+                        addNotification('application', 'Surat Izin Ditolak',
+                            `Surat izin ${app.type} Anda ditolak. Silakan hubungi atasan untuk informasi lebih lanjut.`,
+                            'Lihat Detail', 'viewApplication');
+                    }
+
+                    // Close detail modal and refresh review list
+                    document.getElementById('applicationDetailModal').classList.add('hidden');
+                    document.getElementById('reviewApplicationsModal').classList.remove('hidden');
+                    populateApplicationsToReview();
+                    updateRecentApplications();
+                }
+            }
+        }
+
+        function showMonthlyReport() {
+            document.getElementById('monthlyReportModal').classList.remove('hidden');
+        }
+
+        function showEmployeeList() {
+            document.getElementById('employeeListModal').classList.remove('hidden');
+            populateEmployeeGrid();
+        }
+
+        function populateEmployeeGrid() {
+            const container = document.getElementById('employeeGrid');
+            const searchTerm = document.getElementById('employeeSearch').value.toLowerCase();
+
+            let filteredEmployees = employeeData.filter(emp =>
+                emp.name.toLowerCase().includes(searchTerm) ||
+                emp.position.toLowerCase().includes(searchTerm)
+            );
+
+            container.innerHTML = filteredEmployees.map(emp => {
+                const statusColor = emp.status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+
+                return `
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-user text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900">${emp.name}</h4>
+                                <p class="text-sm text-gray-600">${emp.position}</p>
+                            </div>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
+                                ${emp.status}
+                            </span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Email:</span>
+                                <span class="text-gray-900">${emp.email}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Telepon:</span>
+                                <span class="text-gray-900">${emp.phone}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Cuti Terpakai:</span>
+                                <span class="text-gray-900">${emp.leaveUsed} hari</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Sisa Cuti:</span>
+                                <span class="text-gray-900 font-semibold">${emp.leaveRemaining} hari</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: ${(emp.leaveUsed / 12) * 100}%"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Penggunaan cuti: ${Math.round((emp.leaveUsed / 12) * 100)}%</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showStatistics() {
+            document.getElementById('statisticsModal').classList.remove('hidden');
+        }
+
+        function exportMonthlyReport() {
+            const selectedMonth = document.getElementById('monthSelect').value;
+            const monthNames = {
+                '2024-01': 'Januari 2024',
+                '2024-02': 'Februari 2024',
+                '2024-03': 'Maret 2024'
+            };
+
+            const reportData = {
+                month: selectedMonth,
+                totalApplications: 124,
+                approved: 98,
+                rejected: 26,
+                breakdown: {
+                    'Cuti Tahunan': 56,
+                    'Izin Sakit': 35,
+                    'Dinas Luar': 22,
+                    'Izin Pribadi': 11
+                },
+                weeklyTrend: [28, 35, 31, 30]
+            };
+
+            // Create PDF using jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Set font
+            doc.setFont('helvetica');
+
+            // Header
+            doc.setFontSize(20);
+            doc.setTextColor(40, 40, 40);
+            doc.text('LAPORAN BULANAN SURAT IZIN', 105, 25, { align: 'center' });
+
+            doc.setFontSize(16);
+            doc.text('Dinas Pertanian', 105, 35, { align: 'center' });
+
+            doc.setFontSize(14);
+            doc.text(`Periode: ${monthNames[selectedMonth] || selectedMonth}`, 105, 45, { align: 'center' });
+
+            // Line separator
+            doc.setLineWidth(0.5);
+            doc.line(20, 55, 190, 55);
+
+            // Summary Statistics
+            doc.setFontSize(16);
+            doc.setTextColor(0, 0, 0);
+            doc.text('RINGKASAN STATISTIK', 20, 70);
+
+            doc.setFontSize(12);
+            let yPos = 85;
+
+            // Statistics boxes
+            const stats = [
+                { label: 'Total Pengajuan', value: reportData.totalApplications, color: [59, 130, 246] },
+                { label: 'Disetujui', value: reportData.approved, color: [34, 197, 94] },
+                { label: 'Ditolak', value: reportData.rejected, color: [239, 68, 68] },
+                { label: 'Tingkat Persetujuan', value: `${Math.round((reportData.approved / reportData.totalApplications) * 100)}%`, color: [168, 85, 247] }
+            ];
+
+            stats.forEach((stat, index) => {
+                const xPos = 20 + (index % 2) * 85;
+                const yPosition = yPos + Math.floor(index / 2) * 25;
+
+                // Draw colored rectangle
+                doc.setFillColor(stat.color[0], stat.color[1], stat.color[2]);
+                doc.rect(xPos, yPosition - 8, 80, 20, 'F');
+
+                // Add white text
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(10);
+                doc.text(stat.label, xPos + 5, yPosition - 2);
+                doc.setFontSize(14);
+                doc.text(stat.value.toString(), xPos + 5, yPosition + 8);
+            });
+
+            // Reset text color
+            doc.setTextColor(0, 0, 0);
+            yPos += 60;
+
+            // Breakdown by Leave Type
+            doc.setFontSize(16);
+            doc.text('BREAKDOWN PER JENIS IZIN', 20, yPos);
+            yPos += 15;
+
+            doc.setFontSize(12);
+            Object.entries(reportData.breakdown).forEach(([type, count]) => {
+                const percentage = Math.round((count / reportData.totalApplications) * 100);
+                doc.text(`${type}:`, 25, yPos);
+                doc.text(`${count} pengajuan (${percentage}%)`, 80, yPos);
+                yPos += 10;
+            });
+
+            yPos += 10;
+
+            // Weekly Trend
+            doc.setFontSize(16);
+            doc.text('TREND MINGGUAN', 20, yPos);
+            yPos += 15;
+
+            doc.setFontSize(12);
+            reportData.weeklyTrend.forEach((count, index) => {
+                doc.text(`Minggu ${index + 1}:`, 25, yPos);
+                doc.text(`${count} pengajuan`, 80, yPos);
+                yPos += 10;
+            });
+
+            // Footer
+            doc.setFontSize(10);
+            doc.setTextColor(128, 128, 128);
+            doc.text(`Laporan dibuat pada: ${new Date().toLocaleDateString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}`, 20, 280);
+
+            doc.text('Dinas Pertanian - Sistem Manajemen Surat Izin', 105, 290, { align: 'center' });
+
+            // Save the PDF
+            const fileName = `Laporan_Bulanan_${selectedMonth.replace('-', '_')}.pdf`;
+            doc.save(fileName);
+
+            showNotification('Laporan bulanan PDF berhasil diunduh', 'success');
+        }
+
+        // Employee Functions
+        function showNewApplication() {
+            document.getElementById('newApplicationModal').classList.remove('hidden');
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').min = today;
+            document.getElementById('endDate').min = today;
+        }
+
+        function showApplicationHistory() {
+            document.getElementById('applicationHistoryModal').classList.remove('hidden');
+            populateApplicationHistory();
+        }
+
+        function populateApplicationHistory() {
+            const container = document.getElementById('applicationHistoryList');
+            const statusFilter = document.getElementById('historyStatusFilter').value;
+            const yearFilter = document.getElementById('historyYearFilter').value;
+
+            // Filter applications for current employee
+            let employeeApplications = sampleApplications.filter(app => app.name === 'Ahmad Wijaya');
+
+            if (statusFilter) {
+                employeeApplications = employeeApplications.filter(app => app.status === statusFilter);
+            }
+
+            if (yearFilter) {
+                employeeApplications = employeeApplications.filter(app => app.date.includes(yearFilter));
+            }
+
+            document.getElementById('historyCount').textContent = `${employeeApplications.length} pengajuan`;
+
+            container.innerHTML = employeeApplications.map(app => {
+                const statusColors = {
+                    pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                    approved: 'bg-green-100 text-green-800 border-green-200',
+                    rejected: 'bg-red-100 text-red-800 border-red-200'
+                };
+
+                const statusText = {
+                    pending: 'Menunggu',
+                    approved: 'Disetujui',
+                    rejected: 'Ditolak'
+                };
+
+                const statusIcons = {
+                    pending: 'fas fa-clock',
+                    approved: 'fas fa-check-circle',
+                    rejected: 'fas fa-times-circle'
+                };
+
+                return `
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900 text-lg">${app.type}</h4>
+                                <p class="text-gray-600">${app.duration}</p>
+                                ${app.documentNumber ? `<p class="text-sm text-blue-600 font-mono bg-blue-50 px-2 py-1 rounded mt-1">${app.documentNumber}</p>` : ''}
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full border ${statusColors[app.status]}">
+                                <i class="${statusIcons[app.status]} mr-1"></i>
+                                ${statusText[app.status]}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <p class="text-sm text-gray-600">Tanggal Mulai</p>
+                                <p class="font-medium">${app.startDate}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Tanggal Selesai</p>
+                                <p class="font-medium">${app.endDate}</p>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-sm text-gray-600">Alasan</p>
+                            <p class="text-gray-900">${app.reason}</p>
+                        </div>
+                        <div class="flex justify-between items-center text-sm text-gray-500">
+                            <span>Diajukan: ${app.date}</span>
+                            ${app.status !== 'pending' ? `<span>Diproses: ${new Date().toLocaleDateString('id-ID')}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showLeaveBalance() {
+            document.getElementById('leaveBalanceModal').classList.remove('hidden');
+        }
+
+        function showEmployeeProfile() {
+            document.getElementById('employeeProfileModal').classList.remove('hidden');
+        }
+
+        function updateProfile() {
+            showNotification('Profil berhasil diperbarui', 'success');
+            closeAllModals();
+        }
+
+        // New Application Form Handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const newApplicationForm = document.getElementById('newApplicationForm');
+            if (newApplicationForm) {
+                newApplicationForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = {
+                        type: document.getElementById('leaveType').value,
+                        duration: document.getElementById('leaveDuration').value,
+                        startDate: document.getElementById('startDate').value,
+                        endDate: document.getElementById('endDate').value,
+                        reason: document.getElementById('leaveReason').value
+                    };
+
+                    // Create new application
+                    const newApplication = {
+                        id: Math.max(...sampleApplications.map(a => a.id)) + 1,
+                        name: 'Ahmad Wijaya',
+                        type: formData.type,
+                        date: new Date().toISOString().split('T')[0],
+                        status: 'pending',
+                        duration: formData.duration,
+                        reason: formData.reason,
+                        startDate: formData.startDate,
+                        endDate: formData.endDate,
+                        phone: '081234567890',
+                        position: 'Staff Pertanian'
+                    };
+
+                    sampleApplications.unshift(newApplication);
+
+                    showNotification('Surat izin berhasil diajukan dan menunggu persetujuan', 'success');
+
+                    // Add notification for admin/pimpinan about new application
+                    addNotification('application', 'Surat Izin Baru',
+                        `${newApplication.name} mengajukan ${newApplication.type} selama ${newApplication.duration}`,
+                        'Review Sekarang', 'reviewApplications');
+
+                    closeAllModals();
+                    updateRecentApplications();
+
+                    // Reset form
+                    newApplicationForm.reset();
+                });
+            }
+
+            // Document Settings Form Handler
+            const documentSettingsForm = document.getElementById('documentSettingsForm');
+            if (documentSettingsForm) {
+                documentSettingsForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const newSettings = {
+                        prefix: document.getElementById('docPrefix').value,
+                        suffix: document.getElementById('docSuffix').value,
+                        separator: document.getElementById('docSeparator').value,
+                        nextNumber: parseInt(document.getElementById('docNextNumber').value),
+                        resetYearly: document.getElementById('docResetYearly').checked
+                    };
+
+                    updateDocumentSettings(newSettings);
+                    closeAllModals();
+                });
+
+                // Add event listeners for real-time preview
+                ['docPrefix', 'docSuffix', 'docSeparator', 'docNextNumber'].forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('input', updatePreview);
+                    }
+                });
+            }
+
+            // Date validation
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+
+            if (startDateInput && endDateInput) {
+                startDateInput.addEventListener('change', function() {
+                    endDateInput.min = this.value;
+                    if (endDateInput.value && endDateInput.value < this.value) {
+                        endDateInput.value = this.value;
+                    }
+                });
+            }
+
+            // Duration auto-calculation
+            const durationSelect = document.getElementById('leaveDuration');
+            if (durationSelect) {
+                durationSelect.addEventListener('change', function() {
+                    if (startDateInput.value && this.value !== 'Custom') {
+                        const startDate = new Date(startDateInput.value);
+                        let endDate = new Date(startDate);
+
+                        switch(this.value) {
+                            case 'Setengah hari':
+                                endDate = startDate;
+                                break;
+                            case '1 hari':
+                                endDate = startDate;
+                                break;
+                            case '2 hari':
+                                endDate.setDate(startDate.getDate() + 1);
+                                break;
+                            case '3 hari':
+                                endDate.setDate(startDate.getDate() + 2);
+                                break;
+                            case '1 minggu':
+                                endDate.setDate(startDate.getDate() + 6);
+                                break;
+                            case '2 minggu':
+                                endDate.setDate(startDate.getDate() + 13);
+                                break;
+                        }
+
+                        endDateInput.value = endDate.toISOString().split('T')[0];
+                    }
+                });
+            }
+
+            // File upload handler
+            const attachmentFile = document.getElementById('attachmentFile');
+            if (attachmentFile) {
+                attachmentFile.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        if (file.size > 5 * 1024 * 1024) { // 5MB
+                            showNotification('Ukuran file terlalu besar. Maksimal 5MB.', 'error');
+                            this.value = '';
+                            return;
+                        }
+
+                        const label = this.nextElementSibling.querySelector('span');
+                        label.textContent = `File terpilih: ${file.name}`;
+                        label.className = 'text-green-600';
+                    }
+                });
+            }
+        });
+
+        // Add event listeners for filters
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusFilter = document.getElementById('statusFilter');
+            const typeFilter = document.getElementById('typeFilter');
+            const employeeSearch = document.getElementById('employeeSearch');
+            const historyStatusFilter = document.getElementById('historyStatusFilter');
+            const historyYearFilter = document.getElementById('historyYearFilter');
+            const notificationFilter = document.getElementById('notificationFilter');
+            const notificationStatus = document.getElementById('notificationStatus');
+
+            if (statusFilter) statusFilter.addEventListener('change', populateApplicationsToReview);
+            if (typeFilter) typeFilter.addEventListener('change', populateApplicationsToReview);
+            if (employeeSearch) employeeSearch.addEventListener('input', populateEmployeeGrid);
+            if (historyStatusFilter) historyStatusFilter.addEventListener('change', populateApplicationHistory);
+            if (historyYearFilter) historyYearFilter.addEventListener('change', populateApplicationHistory);
+            if (notificationFilter) notificationFilter.addEventListener('change', populateNotifications);
+            if (notificationStatus) notificationStatus.addEventListener('change', populateNotifications);
+        });
+
+        // Online Users Functions
+        function showOnlineUsersWidget() {
+            const widget = document.getElementById('onlineUsersWidget');
+            widget.classList.remove('hidden');
+            populateOnlineUsersWidget();
+        }
+
+        function populateOnlineUsersWidget() {
+            const container = document.getElementById('onlineUsersList');
+            const onlineCount = document.getElementById('onlineCount');
+
+            onlineCount.textContent = onlineUsers.length;
+
+            // Show only first 3 users in widget
+            const displayUsers = onlineUsers.slice(0, 3);
+
+            container.innerHTML = displayUsers.map(user => {
+                const roleIcons = {
+                    admin: 'fas fa-user-shield text-blue-600',
+                    pimpinan: 'fas fa-user-tie text-green-600',
+                    pegawai: 'fas fa-user text-purple-600'
+                };
+
+                const roleColors = {
+                    admin: 'bg-blue-100 text-blue-800',
+                    pimpinan: 'bg-green-100 text-green-800',
+                    pegawai: 'bg-purple-100 text-purple-800'
+                };
+
+                return `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="relative">
+                                <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3 shadow-sm">
+                                    <i class="${roleIcons[user.role]} text-sm"></i>
+                                </div>
+                                <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900 text-sm">${user.name}</p>
+                                <p class="text-xs text-gray-600">${user.lastActivity}</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${roleColors[user.role]}">
+                            ${user.role}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showAllOnlineUsers() {
+            document.getElementById('onlineUsersModal').classList.remove('hidden');
+            populateAllOnlineUsers();
+            populateRecentActivity();
+        }
+
+        function populateAllOnlineUsers() {
+            const container = document.getElementById('allOnlineUsersList');
+            const modalOnlineCount = document.getElementById('modalOnlineCount');
+            const searchTerm = document.getElementById('onlineUserSearch').value.toLowerCase();
+            const roleFilter = document.getElementById('onlineRoleFilter').value;
+
+            let filteredUsers = onlineUsers.filter(user => {
+                const matchesSearch = user.name.toLowerCase().includes(searchTerm) ||
+                                    user.username.toLowerCase().includes(searchTerm);
+                const matchesRole = !roleFilter || user.role === roleFilter;
+                return matchesSearch && matchesRole;
+            });
+
+            modalOnlineCount.textContent = filteredUsers.length;
+
+            container.innerHTML = filteredUsers.map(user => {
+                const roleIcons = {
+                    admin: 'fas fa-user-shield text-blue-600',
+                    pimpinan: 'fas fa-user-tie text-green-600',
+                    pegawai: 'fas fa-user text-purple-600'
+                };
+
+                const roleColors = {
+                    admin: 'bg-blue-100 text-blue-800',
+                    pimpinan: 'bg-green-100 text-green-800',
+                    pegawai: 'bg-purple-100 text-purple-800'
+                };
+
+                return `
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <div class="relative">
+                                    <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-3">
+                                        <i class="${roleIcons[user.role]}"></i>
+                                    </div>
+                                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">${user.name}</h4>
+                                    <p class="text-sm text-gray-600">@${user.username}</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${roleColors[user.role]}">
+                                ${user.role}
+                            </span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Login:</span>
+                                <span class="text-gray-900">${user.loginTime}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Aktivitas:</span>
+                                <span class="text-gray-900">${user.lastActivity}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Device:</span>
+                                <span class="text-gray-900">${user.device}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Lokasi:</span>
+                                <span class="text-gray-900">${user.location}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">IP:</span>
+                                <span class="text-gray-900 font-mono text-xs">${user.ipAddress}</span>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="flex items-center text-green-600 text-sm">
+                                    <i class="fas fa-circle mr-1 text-xs"></i>
+                                    Online
+                                </span>
+                                <button onclick="viewUserActivity('${user.username}')" class="text-blue-600 hover:text-blue-800 text-sm">
+                                    Lihat Aktivitas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function populateRecentActivity() {
+            const container = document.getElementById('recentActivity');
+
+            container.innerHTML = recentActivity.map(activity => `
+                <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="${activity.icon} ${activity.color} text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">${activity.user}</p>
+                            <p class="text-xs text-gray-600">${activity.action}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs text-gray-500">${activity.time}</span>
+                </div>
+            `).join('');
+        }
+
+        function refreshOnlineUsers() {
+            // Simulate refreshing online users data
+            showNotification('Data pengguna online berhasil diperbarui', 'success');
+            populateAllOnlineUsers();
+            populateOnlineUsersWidget();
+        }
+
+        function viewUserActivity(username) {
+            showNotification(`Menampilkan aktivitas untuk ${username}`, 'info');
+            // In a real application, this would show detailed user activity
+        }
+
+        // Search and filter functionality for online users
+        document.addEventListener('DOMContentLoaded', function() {
+            const onlineUserSearch = document.getElementById('onlineUserSearch');
+            const onlineRoleFilter = document.getElementById('onlineRoleFilter');
+
+            if (onlineUserSearch) onlineUserSearch.addEventListener('input', populateAllOnlineUsers);
+            if (onlineRoleFilter) onlineRoleFilter.addEventListener('change', populateAllOnlineUsers);
+        });
+
+        // Initialize
+        updateDate();
+        updateNotificationBadge();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'971ef144d2201f9f',t:'MTc1NTY2MTk5NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
