@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -277,9 +278,15 @@
                             <option value="pegawai">Pegawai</option>
                         </select>
                     </div>
-                    <button onclick="showAddUserForm()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
-                        <i class="fas fa-plus mr-2"></i>Tambah Pengguna
-                    </button>
+                    <div class="flex space-x-2">
+                        <input type="file" id="importUsersFile" accept=".csv,.json" class="hidden">
+                        <button onclick="document.getElementById('importUsersFile').click()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 flex items-center">
+                            <i class="fas fa-file-import mr-2"></i>Import Data
+                        </button>
+                        <button onclick="showAddUserForm()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                            <i class="fas fa-plus mr-2"></i>Tambah Pengguna
+                        </button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full border-collapse">
@@ -2368,6 +2375,85 @@
         document.getElementById('userSearch').addEventListener('input', populateUserTable);
         document.getElementById('roleFilter').addEventListener('change', populateUserTable);
 
+        // Import users handler
+        (function attachImportUsersHandler(){
+            const input = document.getElementById('importUsersFile');
+            if (!input) return;
+            input.addEventListener('change', async function() {
+                if (this.files.length === 0) return;
+                const file = this.files[0];
+                try {
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    if (ext === 'json') {
+                        const text = await file.text();
+                        const data = JSON.parse(text);
+                        const users = Array.isArray(data) ? data : (Array.isArray(data.users) ? data.users : []);
+                        if (!Array.isArray(users) || users.length === 0) throw new Error('Format JSON tidak valid');
+                        mergeImportedUsers(users);
+                    } else if (ext === 'csv') {
+                        const text = await file.text();
+                        const users = parseCsvUsers(text);
+                        if (!Array.isArray(users) || users.length === 0) throw new Error('Format CSV tidak valid');
+                        mergeImportedUsers(users);
+                    } else {
+                        throw new Error('Format file tidak didukung');
+                    }
+                    showNotification('Import data pengguna berhasil', 'success');
+                    populateUserTable();
+                    this.value = '';
+                } catch (e) {
+                    showNotification(e.message || 'Gagal mengimpor data pengguna', 'error');
+                    this.value = '';
+                }
+            });
+        })();
+
+        function parseCsvUsers(csvText) {
+            const lines = csvText.split(/\r?\n/).filter(l => l.trim().length > 0);
+            if (lines.length === 0) return [];
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const idx = {
+                name: headers.indexOf('name') !== -1 ? headers.indexOf('name') : headers.indexOf('nama'),
+                username: headers.indexOf('username'),
+                role: headers.indexOf('role'),
+                email: headers.indexOf('email'),
+                status: headers.indexOf('status')
+            };
+            const users = [];
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(',').map(c => c.trim());
+                if (cols.length < 2) continue;
+                users.push({
+                    name: idx.name >= 0 ? cols[idx.name] : cols[0],
+                    username: idx.username >= 0 ? cols[idx.username] : (cols[1] || ''),
+                    role: idx.role >= 0 ? cols[idx.role] : 'pegawai',
+                    email: idx.email >= 0 ? cols[idx.email] : '',
+                    status: idx.status >= 0 ? cols[idx.status] : 'Aktif'
+                });
+            }
+            return users;
+        }
+
+        function mergeImportedUsers(users) {
+            const normalized = users
+                .filter(u => u && (u.username || u.name))
+                .map(u => ({
+                    id: undefined,
+                    name: u.name || '-',
+                    username: u.username || (u.name ? u.name.toLowerCase().replace(/\s+/g,'') : ''),
+                    role: ['admin','pimpinan','pegawai'].includes((u.role||'').toLowerCase()) ? (u.role||'').toLowerCase() : 'pegawai',
+                    email: u.email || '',
+                    status: (u.status && u.status.toLowerCase().startsWith('non')) ? 'Nonaktif' : 'Aktif',
+                    lastLogin: 'Belum pernah login'
+                }));
+
+            const existingUsernames = new Set(allUsers.map(u => u.username));
+            const deduped = normalized.filter(u => u.username && !existingUsernames.has(u.username));
+            const nextIdStart = Math.max(...allUsers.map(u => u.id)) + 1;
+            deduped.forEach((u, idx) => { u.id = nextIdStart + idx; });
+            allUsers = allUsers.concat(deduped);
+        }
+
         function showSystemReports() {
             document.getElementById('systemReportsModal').classList.remove('hidden');
         }
@@ -2551,6 +2637,60 @@
                 })}`, 20, 280);
 
                 doc.text('Dinas Pertanian - Sistem Manajemen Surat Izin', 105, 290, { align: 'center' });
+
+                // Tabel Data Pegawai yang Mengajukan Surat Izin
+                try {
+                    const tableHead = [
+                        [
+                            'No',
+                            'Nama Pegawai',
+                            'Jenis Izin',
+                            'Tanggal Pengajuan',
+                            'Durasi',
+                            'Periode',
+                            'Status',
+                            'No. Dokumen'
+                        ]
+                    ];
+                    const tableBody = (Array.isArray(sampleApplications) ? sampleApplications : []).map((app, idx) => [
+                        (idx + 1).toString(),
+                        app.name || '-',
+                        app.type || '-',
+                        app.date || '-',
+                        app.duration || '-',
+                        `${app.startDate || '-'} s/d ${app.endDate || '-'}`,
+                        (app.status || '-'),
+                        app.documentNumber || '-'
+                    ]);
+
+                    let startY = 200;
+                    if (typeof doc.lastAutoTable !== 'undefined' && doc.lastAutoTable.finalY) {
+                        startY = Math.min(200, doc.lastAutoTable.finalY + 10);
+                    }
+
+                    doc.autoTable({
+                        head: tableHead,
+                        body: tableBody,
+                        startY: startY,
+                        styles: { fontSize: 9 },
+                        headStyles: { fillColor: [59, 130, 246] },
+                        columnStyles: {
+                            0: { cellWidth: 10 },
+                            1: { cellWidth: 40 },
+                            2: { cellWidth: 25 },
+                            3: { cellWidth: 25 },
+                            4: { cellWidth: 20 },
+                            5: { cellWidth: 35 },
+                            6: { cellWidth: 20 },
+                            7: { cellWidth: 35 }
+                        },
+                        didDrawPage: function (data) {
+                            // move footer if needed
+                        }
+                    });
+                } catch (e) {
+                    // ignore table errors
+                }
 
                 // Save the PDF
                 const fileName = `Laporan_Sistem_${new Date().toISOString().split('T')[0]}.pdf`;
@@ -3087,6 +3227,57 @@
                 doc.text(`${count} pengajuan`, 80, yPos);
                 yPos += 10;
             });
+
+            // Tabel Data Pegawai yang Mengajukan Surat Izin (bulan terpilih)
+            try {
+                const monthFilter = (value) => {
+                    try {
+                        return value && value.startsWith(selectedMonth.split('-')[0]);
+                    } catch (_) { return true; }
+                };
+
+                const monthlyApps = (Array.isArray(sampleApplications) ? sampleApplications : []).filter(app => {
+                    if (!app || !app.date) return true;
+                    return app.date.startsWith(selectedMonth);
+                });
+
+                const tableHead = [[
+                    'No', 'Nama Pegawai', 'Jenis Izin', 'Tanggal', 'Durasi', 'Periode', 'Status', 'No. Dokumen'
+                ]];
+                const tableBody = monthlyApps.map((app, idx) => [
+                    (idx + 1).toString(),
+                    app.name || '-',
+                    app.type || '-',
+                    app.date || '-',
+                    app.duration || '-',
+                    `${app.startDate || '-'} s/d ${app.endDate || '-'}`,
+                    app.status || '-',
+                    app.documentNumber || '-'
+                ]);
+
+                let startY = Math.max(yPos + 10, 110);
+                if (typeof doc.lastAutoTable !== 'undefined' && doc.lastAutoTable.finalY) {
+                    startY = doc.lastAutoTable.finalY + 10;
+                }
+
+                doc.autoTable({
+                    head: tableHead,
+                    body: tableBody,
+                    startY: startY,
+                    styles: { fontSize: 9 },
+                    headStyles: { fillColor: [59, 130, 246] },
+                    columnStyles: {
+                        0: { cellWidth: 10 },
+                        1: { cellWidth: 40 },
+                        2: { cellWidth: 25 },
+                        3: { cellWidth: 25 },
+                        4: { cellWidth: 20 },
+                        5: { cellWidth: 35 },
+                        6: { cellWidth: 20 },
+                        7: { cellWidth: 35 }
+                    }
+                });
+            } catch (e) {}
 
             // Footer
             doc.setFontSize(10);
