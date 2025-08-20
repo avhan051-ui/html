@@ -734,9 +734,17 @@
             </div>
             <div class="p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <input type="text" id="employeeSearch" placeholder="Cari pegawai..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <div class="text-sm text-gray-600">
-                        Total: <span class="font-semibold">45 pegawai</span>
+                    <input type="text" id="employeeSearch" placeholder="Cari pegawai..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" oninput="populateEmployeeGrid()">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-sm text-gray-600">
+                            Total: <span class="font-semibold" id="employeeTotalCount">45 pegawai</span>
+                        </div>
+                        <div>
+                            <input type="file" id="employeeImportInput" accept=".csv,.json" class="hidden" onchange="handleEmployeeImport(event)">
+                            <label for="employeeImportInput" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer flex items-center">
+                                <i class="fas fa-file-import mr-2"></i>Import Data
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="employeeGrid">
@@ -1611,6 +1619,80 @@
             { id: 8, name: 'Lina Marlina', position: 'Sekretaris', phone: '081234567897', email: 'lina@dinaspertanian.go.id', leaveUsed: 2, leaveRemaining: 10, status: 'Aktif' }
         ];
 
+        function handleEmployeeImport(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const content = reader.result;
+                    let imported = [];
+                    if (file.name.toLowerCase().endsWith('.json')) {
+                        const parsed = JSON.parse(content);
+                        imported = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.employees) ? parsed.employees : []);
+                    } else {
+                        const lines = String(content).split(/\r?\n/).filter(l => l.trim().length > 0);
+                        if (lines.length > 0) {
+                            const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+                            const idx = (k) => header.indexOf(k);
+                            for (let i = 1; i < lines.length; i++) {
+                                const cols = lines[i].split(',');
+                                if (cols.length < 2) continue;
+                                imported.push({
+                                    id: Date.now() + i,
+                                    name: cols[idx('name')]?.trim() || '-',
+                                    position: cols[idx('position')]?.trim() || '-',
+                                    phone: cols[idx('phone')]?.trim() || '-',
+                                    email: cols[idx('email')]?.trim() || '-',
+                                    leaveUsed: Number(cols[idx('leaveused')] ?? 0) || 0,
+                                    leaveRemaining: Number(cols[idx('leaveremaining')] ?? 0) || 0,
+                                    status: cols[idx('status')]?.trim() || 'Aktif'
+                                });
+                            }
+                        }
+                    }
+
+                    if (imported.length === 0) {
+                        showNotification('Tidak ada data pegawai yang terbaca dari file', 'error');
+                        return;
+                    }
+
+                    imported = imported.map((emp, i) => ({
+                        id: Number(emp.id) || (Date.now() + i),
+                        name: emp.name || emp.nama || '-',
+                        position: emp.position || emp.jabatan || '-',
+                        phone: emp.phone || emp.telepon || '-',
+                        email: emp.email || '-',
+                        leaveUsed: Number(emp.leaveUsed ?? emp.cutiTerpakai ?? 0) || 0,
+                        leaveRemaining: Number(emp.leaveRemaining ?? emp.sisaCuti ?? 0) || 0,
+                        status: emp.status || 'Aktif'
+                    }));
+
+                    const emailToIndex = new Map(employeeData.map((e, idx) => [e.email, idx]));
+                    imported.forEach(emp => {
+                        if (emp.email && emailToIndex.has(emp.email)) {
+                            const idx = emailToIndex.get(emp.email);
+                            employeeData[idx] = emp;
+                        } else {
+                            employeeData.push(emp);
+                        }
+                    });
+
+                    populateEmployeeGrid();
+                    const countEl = document.getElementById('employeeTotalCount');
+                    if (countEl) countEl.textContent = employeeData.length + ' pegawai';
+                    showNotification('Data pegawai berhasil diimport', 'success');
+                } catch (e) {
+                    console.error(e);
+                    showNotification('Gagal mengimport data pegawai', 'error');
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
         let currentApplicationId = null;
 
         // Document numbering functions
@@ -2428,6 +2510,57 @@
             }
         }
 
+        function drawApplicationsTable(doc, startY, applications) {
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const leftMargin = 10;
+            const rowHeight = 8;
+            const columns = [
+                { header: 'No', width: 10, key: 'no' },
+                { header: 'Nama', width: 40, key: 'name' },
+                { header: 'Jenis', width: 25, key: 'type' },
+                { header: 'Tgl', width: 20, key: 'date' },
+                { header: 'Periode', width: 35, key: 'period' },
+                { header: 'Status', width: 20, key: 'status' },
+                { header: 'No Surat', width: 40, key: 'documentNumber' }
+            ];
+
+            let y = startY;
+            let x = leftMargin;
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.setFillColor(240, 240, 240);
+            columns.forEach(col => { doc.rect(x, y, col.width, rowHeight, 'F'); doc.text(col.header, x + 2, y + 6); x += col.width; });
+            y += rowHeight;
+            doc.setDrawColor(200, 200, 200);
+
+            applications.forEach((app, index) => {
+                if (y > pageHeight - 20) {
+                    doc.addPage();
+                    y = 15;
+                    let xh = leftMargin;
+                    doc.setFillColor(240, 240, 240);
+                    columns.forEach(col => { doc.rect(xh, y, col.width, rowHeight, 'F'); doc.text(col.header, xh + 2, y + 6); xh += col.width; });
+                    y += rowHeight;
+                }
+
+                const row = {
+                    no: String(index + 1),
+                    name: app.name || '-',
+                    type: app.type || '-',
+                    date: app.date || '-',
+                    period: (app.startDate && app.endDate) ? `${app.startDate} - ${app.endDate}` : '-',
+                    status: app.status || '-',
+                    documentNumber: app.documentNumber || '-'
+                };
+                let xr = leftMargin;
+                columns.forEach(col => { doc.rect(xr, y, col.width, rowHeight); const text = String(row[col.key] ?? '-'); doc.text(text.length > 30 ? text.slice(0, 30) + '…' : text, xr + 2, y + 6); xr += col.width; });
+                y += rowHeight;
+            });
+
+            return y;
+        }
+
         function exportReport(format) {
             const reportData = {
                 totalApplications: 1247,
@@ -2537,6 +2670,12 @@
 
                     yPos += 15;
                 });
+
+                // Applications Table
+                yPos += 10;
+                doc.setFontSize(16);
+                doc.text('DAFTAR PENGAJUAN SURAT IZIN', 20, yPos);
+                yPos = drawApplicationsTable(doc, yPos + 7, sampleApplications);
 
                 // Footer
                 doc.setFontSize(10);
@@ -3087,6 +3226,19 @@
                 doc.text(`${count} pengajuan`, 80, yPos);
                 yPos += 10;
             });
+
+            // Applications Table (Filtered by month)
+            yPos += 10;
+            doc.setFontSize(16);
+            doc.text('DAFTAR PENGAJUAN BULAN INI', 20, yPos);
+            yPos += 5;
+            const tableApplications = sampleApplications.filter(app => (app.date || '').startsWith(selectedMonth));
+            // reuse helper defined in exportReport
+            const { jsPDF } = window.jspdf; // to satisfy linters; already defined
+            const drawTable = (function(){ return (typeof drawApplicationsTable === 'function') ? drawApplicationsTable : null; })();
+            if (drawTable) {
+                yPos = drawTable(doc, yPos + 5, tableApplications);
+            }
 
             // Footer
             doc.setFontSize(10);
