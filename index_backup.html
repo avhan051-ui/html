@@ -2577,26 +2577,14 @@
                     { type: 'Izin Pribadi', percentage: 9 }
                 ],
                 employeeApplications: [
-                    { name: 'Ahmad Wijaya', position: 'Staff Pertanian', type: 'Izin Sakit', date: '15/01/2024', status: 'Menunggu', duration: '2 hari', reason: 'Demam tinggi', department: 'Tanaman Pangan' },
-                    { name: 'Siti Nurhaliza', position: 'Koordinator Lapangan', type: 'Cuti Tahunan', date: '14/01/2024', status: 'Disetujui', duration: '5 hari', reason: 'Liburan keluarga', department: 'Lapangan' },
-                    { name: 'Budi Santoso', position: 'Supervisor', type: 'Dinas Luar', date: '13/01/2024', status: 'Ditolak', duration: '1 hari', reason: 'Pelatihan Jakarta', department: 'Supervisi' },
-                    { name: 'Maya Sari', position: 'Admin', type: 'Izin Pribadi', date: '12/01/2024', status: 'Disetujui', duration: '1 hari', reason: 'Urusan keluarga', department: 'Administrasi' },
-                    { name: 'Andi Pratama', position: 'Staff Teknis', type: 'Izin Sakit', date: '11/01/2024', status: 'Menunggu', duration: '3 hari', reason: 'Flu dan batuk', department: 'Teknis' },
-                    { name: 'Dewi Lestari', position: 'Analis Data', type: 'Cuti Tahunan', date: '10/01/2024', status: 'Menunggu', duration: '7 hari', reason: 'Mudik lebaran', department: 'Data & Analisis' },
-                    { name: 'Rudi Hermawan', position: 'Peneliti', type: 'Dinas Luar', date: '09/01/2024', status: 'Menunggu', duration: '2 hari', reason: 'Seminar nasional', department: 'Penelitian' },
-                    { name: 'Lina Marlina', position: 'Sekretaris', type: 'Izin Pribadi', date: '08/01/2024', status: 'Menunggu', duration: '1 hari', reason: 'Dokumen penting', department: 'Administrasi' },
-                    { name: 'Farid Rahman', position: 'Staff Lapangan', type: 'Izin Sakit', date: '07/01/2024', status: 'Disetujui', duration: '1 hari', reason: 'Sakit kepala', department: 'Lapangan' },
-                    { name: 'Nina Sari', position: 'Koordinator Admin', type: 'Cuti Tahunan', date: '06/01/2024', status: 'Disetujui', duration: '3 hari', reason: 'Liburan singkat', department: 'Administrasi' },
-                    { name: 'Hasan Ali', position: 'Staff Peneliti', type: 'Dinas Luar', date: '05/01/2024', status: 'Disetujui', duration: '4 hari', reason: 'Konferensi ilmiah', department: 'Penelitian' },
-                    { name: 'Sari Indah', position: 'Analis Lapangan', type: 'Izin Sakit', date: '04/01/2024', status: 'Ditolak', duration: '2 hari', reason: 'Sakit punggung', department: 'Lapangan' }
-                ],
-                departmentSummary: [
-                    { department: 'Tanaman Pangan', total: 15, approved: 12, rejected: 2, pending: 1 },
-                    { department: 'Lapangan', total: 18, approved: 14, rejected: 1, pending: 3 },
-                    { department: 'Administrasi', total: 12, approved: 10, rejected: 1, pending: 1 },
-                    { department: 'Penelitian', total: 20, approved: 16, rejected: 2, pending: 2 },
-                    { department: 'Teknis', total: 8, approved: 6, rejected: 0, pending: 2 },
-                    { department: 'Data & Analisis', total: 10, approved: 8, rejected: 1, pending: 1 }
+                    { name: 'Ahmad Wijaya', position: 'Staff Pertanian', type: 'Izin Sakit', date: '15/01/2024', status: 'Menunggu', duration: '2 hari' },
+                    { name: 'Siti Nurhaliza', position: 'Koordinator Lapangan', type: 'Cuti Tahunan', date: '14/01/2024', status: 'Disetujui', duration: '5 hari' },
+                    { name: 'Budi Santoso', position: 'Supervisor', type: 'Dinas Luar', date: '13/01/2024', status: 'Ditolak', duration: '1 hari' },
+                    { name: 'Maya Sari', position: 'Admin', type: 'Izin Pribadi', date: '12/01/2024', status: 'Disetujui', duration: '1 hari' },
+                    { name: 'Andi Pratama', position: 'Staff Teknis', type: 'Izin Sakit', date: '11/01/2024', status: 'Menunggu', duration: '3 hari' },
+                    { name: 'Dewi Lestari', position: 'Analis Data', type: 'Cuti Tahunan', date: '10/01/2024', status: 'Menunggu', duration: '7 hari' },
+                    { name: 'Rudi Hermawan', position: 'Peneliti', type: 'Dinas Luar', date: '09/01/2024', status: 'Menunggu', duration: '2 hari' },
+                    { name: 'Lina Marlina', position: 'Sekretaris', type: 'Izin Pribadi', date: '08/01/2024', status: 'Menunggu', duration: '1 hari' }
                 ]
             };
 
@@ -2702,9 +2690,9 @@
                 doc.text('DATA PEGAWAI YANG MENGAJUKAN SURAT IZIN', 105, yPos, { align: 'center' });
                 yPos += 20;
 
-                // Table headers  
-                const tableHeaders = ['No', 'Nama', 'Jabatan', 'Dept', 'Jenis Izin', 'Tanggal', 'Status', 'Durasi', 'Alasan'];
-                const colWidths = [10, 25, 22, 18, 20, 18, 16, 12, 34];
+                // Table headers
+                const tableHeaders = ['No', 'Nama Pegawai', 'Jabatan', 'Jenis Izin', 'Tanggal', 'Status', 'Durasi'];
+                const colWidths = [15, 35, 30, 25, 25, 25, 20];
                 const startX = 10;
                 let currentX = startX;
 
@@ -2743,35 +2731,17 @@
                         (index + 1).toString(),
                         employee.name,
                         employee.position,
-                        employee.department || 'N/A',
                         employee.type,
                         employee.date,
                         employee.status,
-                        employee.duration,
-                        employee.reason || 'N/A'
+                        employee.duration
                     ];
 
                     rowData.forEach((data, colIndex) => {
                         // Truncate text if too long
                         let text = data;
-                        const maxLength = colIndex === 8 ? 18 : (colIndex === 1 ? 14 : (colIndex === 2 ? 12 : (colIndex === 3 ? 8 : 10))); // Different lengths for different columns
-                        if (text.length > maxLength && colIndex !== 0) {
-                            text = text.substring(0, maxLength) + '...';
-                        }
-
-                        // Set color for status column
-                        if (colIndex === 6) { // Status column
-                            if (text === 'Disetujui') {
-                                doc.setTextColor(34, 197, 94); // Green
-                            } else if (text === 'Ditolak') {
-                                doc.setTextColor(239, 68, 68); // Red
-                            } else if (text === 'Menunggu') {
-                                doc.setTextColor(245, 158, 11); // Orange
-                            } else {
-                                doc.setTextColor(0, 0, 0);
-                            }
-                        } else {
-                            doc.setTextColor(0, 0, 0);
+                        if (text.length > 12 && colIndex !== 0) {
+                            text = text.substring(0, 12) + '...';
                         }
                         
                         doc.text(text, currentX + 2, yPos);
@@ -2805,138 +2775,6 @@
                 const tableEndY = Math.min(50 + reportData.employeeApplications.length * 10, 270);
                 doc.line(startX, 30 + 12, startX + 175, 30 + 12); // Header bottom
                 doc.line(startX, tableEndY, startX + 175, tableEndY); // Table bottom
-
-                // Add new page for department summary
-                doc.addPage();
-                yPos = 30;
-
-                // Department Summary Table
-                doc.setFontSize(16);
-                doc.setTextColor(0, 0, 0);
-                doc.text('RINGKASAN PER DEPARTEMEN', 105, yPos, { align: 'center' });
-                yPos += 20;
-
-                // Department table headers
-                const deptHeaders = ['No', 'Departemen', 'Total', 'Disetujui', 'Ditolak', 'Menunggu', 'Tingkat Approval'];
-                const deptColWidths = [15, 40, 20, 25, 20, 25, 30];
-                const deptStartX = 10;
-                let deptCurrentX = deptStartX;
-
-                // Draw department header background
-                doc.setFillColor(168, 85, 247); // Purple color for department summary
-                doc.rect(deptStartX, yPos - 8, 175, 12, 'F');
-
-                // Department header text
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'bold');
-                
-                deptHeaders.forEach((header, index) => {
-                    doc.text(header, deptCurrentX + 2, yPos - 2);
-                    deptCurrentX += deptColWidths[index];
-                });
-
-                yPos += 8;
-
-                // Department table data
-                doc.setTextColor(0, 0, 0);
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(8);
-
-                reportData.departmentSummary.forEach((dept, index) => {
-                    deptCurrentX = deptStartX;
-                    
-                    // Alternating row colors
-                    if (index % 2 === 0) {
-                        doc.setFillColor(248, 250, 252);
-                        doc.rect(deptStartX, yPos - 6, 175, 10, 'F');
-                    }
-
-                    const approvalRate = Math.round((dept.approved / dept.total) * 100);
-                    
-                    // Row data
-                    const deptRowData = [
-                        (index + 1).toString(),
-                        dept.department,
-                        dept.total.toString(),
-                        dept.approved.toString(),
-                        dept.rejected.toString(),
-                        dept.pending.toString(),
-                        `${approvalRate}%`
-                    ];
-
-                    deptRowData.forEach((data, colIndex) => {
-                        // Set color based on approval rate for last column
-                        if (colIndex === 6) {
-                            if (approvalRate >= 80) {
-                                doc.setTextColor(34, 197, 94); // Green
-                            } else if (approvalRate >= 60) {
-                                doc.setTextColor(245, 158, 11); // Orange
-                            } else {
-                                doc.setTextColor(239, 68, 68); // Red
-                            }
-                        } else {
-                            doc.setTextColor(0, 0, 0);
-                        }
-                        
-                        doc.text(data, deptCurrentX + 2, yPos);
-                        deptCurrentX += deptColWidths[colIndex];
-                    });
-
-                    yPos += 10;
-                });
-
-                // Draw department table borders
-                doc.setDrawColor(0, 0, 0);
-                doc.setLineWidth(0.1);
-                
-                // Vertical lines for department table
-                deptCurrentX = deptStartX;
-                for (let i = 0; i <= deptHeaders.length; i++) {
-                    const deptTableHeight = reportData.departmentSummary.length * 10 + 12;
-                    doc.line(deptCurrentX, yPos - reportData.departmentSummary.length * 10 - 12, deptCurrentX, yPos - reportData.departmentSummary.length * 10 + deptTableHeight - 12);
-                    if (i < deptHeaders.length) {
-                        deptCurrentX += deptColWidths[i];
-                    }
-                }
-
-                // Horizontal lines for department table
-                const deptTableStartY = yPos - reportData.departmentSummary.length * 10 - 12;
-                const deptTableEndY = yPos;
-                doc.line(deptStartX, deptTableStartY, deptStartX + 175, deptTableStartY); // Header top
-                doc.line(deptStartX, deptTableStartY + 12, deptStartX + 175, deptTableStartY + 12); // Header bottom
-                doc.line(deptStartX, deptTableEndY, deptStartX + 175, deptTableEndY); // Table bottom
-
-                // Add summary statistics below department table
-                yPos += 20;
-                doc.setFontSize(14);
-                doc.setTextColor(0, 0, 0);
-                doc.text('ANALISIS DEPARTEMEN:', 20, yPos);
-                yPos += 15;
-
-                // Find best and worst performing departments
-                const sortedDepts = reportData.departmentSummary.sort((a, b) => {
-                    const rateA = (a.approved / a.total) * 100;
-                    const rateB = (b.approved / b.total) * 100;
-                    return rateB - rateA;
-                });
-
-                doc.setFontSize(10);
-                doc.setTextColor(34, 197, 94);
-                doc.text(`• Departemen Terbaik: ${sortedDepts[0].department} (${Math.round((sortedDepts[0].approved / sortedDepts[0].total) * 100)}% approval rate)`, 25, yPos);
-                yPos += 10;
-
-                doc.setTextColor(239, 68, 68);
-                doc.text(`• Perlu Perhatian: ${sortedDepts[sortedDepts.length - 1].department} (${Math.round((sortedDepts[sortedDepts.length - 1].approved / sortedDepts[sortedDepts.length - 1].total) * 100)}% approval rate)`, 25, yPos);
-                yPos += 10;
-
-                const totalDeptApplications = reportData.departmentSummary.reduce((sum, dept) => sum + dept.total, 0);
-                const totalDeptApproved = reportData.departmentSummary.reduce((sum, dept) => sum + dept.approved, 0);
-                
-                doc.setTextColor(0, 0, 0);
-                doc.text(`• Total Pengajuan Semua Departemen: ${totalDeptApplications}`, 25, yPos);
-                yPos += 8;
-                doc.text(`• Rata-rata Approval Rate: ${Math.round((totalDeptApproved / totalDeptApplications) * 100)}%`, 25, yPos);
 
                 // Footer
                 doc.setFontSize(10);
@@ -3400,19 +3238,7 @@
                     'Dinas Luar': 22,
                     'Izin Pribadi': 11
                 },
-                weeklyTrend: [28, 35, 31, 30],
-                monthlyEmployeeApplications: [
-                    { name: 'Ahmad Wijaya', position: 'Staff Pertanian', type: 'Izin Sakit', date: '15/01/2024', status: 'Disetujui', duration: '2 hari', reason: 'Demam tinggi' },
-                    { name: 'Siti Nurhaliza', position: 'Koordinator Lapangan', type: 'Cuti Tahunan', date: '14/01/2024', status: 'Disetujui', duration: '5 hari', reason: 'Liburan keluarga' },
-                    { name: 'Budi Santoso', position: 'Supervisor', type: 'Dinas Luar', date: '13/01/2024', status: 'Ditolak', duration: '1 hari', reason: 'Pelatihan Jakarta' },
-                    { name: 'Maya Sari', position: 'Admin', type: 'Izin Pribadi', date: '12/01/2024', status: 'Disetujui', duration: '1 hari', reason: 'Urusan keluarga' },
-                    { name: 'Andi Pratama', position: 'Staff Teknis', type: 'Izin Sakit', date: '11/01/2024', status: 'Menunggu', duration: '3 hari', reason: 'Flu dan batuk' },
-                    { name: 'Dewi Lestari', position: 'Analis Data', type: 'Cuti Tahunan', date: '10/01/2024', status: 'Disetujui', duration: '7 hari', reason: 'Mudik lebaran' },
-                    { name: 'Rudi Hermawan', position: 'Peneliti', type: 'Dinas Luar', date: '09/01/2024', status: 'Disetujui', duration: '2 hari', reason: 'Seminar nasional' },
-                    { name: 'Lina Marlina', position: 'Sekretaris', type: 'Izin Pribadi', date: '08/01/2024', status: 'Menunggu', duration: '1 hari', reason: 'Dokumen penting' },
-                    { name: 'Farid Rahman', position: 'Staff Lapangan', type: 'Izin Sakit', date: '07/01/2024', status: 'Disetujui', duration: '1 hari', reason: 'Sakit kepala' },
-                    { name: 'Nina Sari', position: 'Koordinator Admin', type: 'Cuti Tahunan', date: '06/01/2024', status: 'Disetujui', duration: '3 hari', reason: 'Liburan singkat' }
-                ]
+                weeklyTrend: [28, 35, 31, 30]
             };
 
             // Create PDF using jsPDF
@@ -3499,170 +3325,6 @@
                 doc.text(`${count} pengajuan`, 80, yPos);
                 yPos += 10;
             });
-
-            // Add new page for detailed employee table
-            doc.addPage();
-            yPos = 30;
-
-            // Monthly Employee Applications Table
-            doc.setFontSize(16);
-            doc.setTextColor(0, 0, 0);
-            doc.text('DETAIL PENGAJUAN SURAT IZIN BULANAN', 105, yPos, { align: 'center' });
-            yPos += 20;
-
-            // Table headers
-            const monthlyTableHeaders = ['No', 'Nama', 'Jabatan', 'Jenis Izin', 'Tanggal', 'Status', 'Durasi', 'Alasan'];
-            const monthlyColWidths = [12, 28, 25, 22, 20, 18, 15, 35];
-            const monthlyStartX = 10;
-            let monthlyCurrentX = monthlyStartX;
-
-            // Draw header background
-            doc.setFillColor(34, 197, 94); // Green color for monthly report
-            doc.rect(monthlyStartX, yPos - 8, 175, 12, 'F');
-
-            // Header text
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(8);
-            doc.setFont('helvetica', 'bold');
-            
-            monthlyTableHeaders.forEach((header, index) => {
-                doc.text(header, monthlyCurrentX + 1, yPos - 2);
-                monthlyCurrentX += monthlyColWidths[index];
-            });
-
-            yPos += 8;
-
-            // Table data
-            doc.setTextColor(0, 0, 0);
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(7);
-
-            reportData.monthlyEmployeeApplications.forEach((employee, index) => {
-                monthlyCurrentX = monthlyStartX;
-                
-                // Alternating row colors
-                if (index % 2 === 0) {
-                    doc.setFillColor(248, 250, 252);
-                    doc.rect(monthlyStartX, yPos - 6, 175, 10, 'F');
-                }
-
-                // Set status color
-                let statusColor = [0, 0, 0]; // Default black
-                if (employee.status === 'Disetujui') {
-                    statusColor = [34, 197, 94]; // Green
-                } else if (employee.status === 'Ditolak') {
-                    statusColor = [239, 68, 68]; // Red
-                } else if (employee.status === 'Menunggu') {
-                    statusColor = [245, 158, 11]; // Orange
-                }
-
-                // Row data
-                const monthlyRowData = [
-                    (index + 1).toString(),
-                    employee.name,
-                    employee.position,
-                    employee.type,
-                    employee.date,
-                    employee.status,
-                    employee.duration,
-                    employee.reason
-                ];
-
-                monthlyRowData.forEach((data, colIndex) => {
-                    // Truncate text if too long
-                    let text = data;
-                    const maxLength = colIndex === 7 ? 20 : (colIndex === 1 ? 15 : 12); // Longer for reason and name
-                    if (text.length > maxLength && colIndex !== 0) {
-                        text = text.substring(0, maxLength) + '...';
-                    }
-                    
-                    // Set color for status column
-                    if (colIndex === 5) { // Status column
-                        doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
-                    } else {
-                        doc.setTextColor(0, 0, 0);
-                    }
-                    
-                    doc.text(text, monthlyCurrentX + 1, yPos);
-                    monthlyCurrentX += monthlyColWidths[colIndex];
-                });
-
-                yPos += 10;
-
-                // Add new page if needed
-                if (yPos > 270) {
-                    doc.addPage();
-                    yPos = 30;
-                    
-                    // Repeat header on new page
-                    doc.setFontSize(14);
-                    doc.setTextColor(0, 0, 0);
-                    doc.text('DETAIL PENGAJUAN SURAT IZIN BULANAN (Lanjutan)', 105, yPos, { align: 'center' });
-                    yPos += 20;
-                    
-                    // Redraw table header
-                    monthlyCurrentX = monthlyStartX;
-                    doc.setFillColor(34, 197, 94);
-                    doc.rect(monthlyStartX, yPos - 8, 175, 12, 'F');
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(8);
-                    doc.setFont('helvetica', 'bold');
-                    
-                    monthlyTableHeaders.forEach((header, index) => {
-                        doc.text(header, monthlyCurrentX + 1, yPos - 2);
-                        monthlyCurrentX += monthlyColWidths[index];
-                    });
-                    
-                    yPos += 8;
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(7);
-                }
-            });
-
-            // Draw table borders
-            doc.setDrawColor(0, 0, 0);
-            doc.setLineWidth(0.1);
-            
-            // Calculate table dimensions for current page
-            const currentPageRows = Math.min(reportData.monthlyEmployeeApplications.length, Math.floor((270 - 50) / 10));
-            const tableHeight = currentPageRows * 10 + 12;
-            
-            // Vertical lines
-            monthlyCurrentX = monthlyStartX;
-            for (let i = 0; i <= monthlyTableHeaders.length; i++) {
-                doc.line(monthlyCurrentX, yPos - currentPageRows * 10 - 12, monthlyCurrentX, yPos - currentPageRows * 10 + tableHeight - 12);
-                if (i < monthlyTableHeaders.length) {
-                    monthlyCurrentX += monthlyColWidths[i];
-                }
-            }
-
-            // Horizontal lines
-            const tableStartY = yPos - currentPageRows * 10 - 12;
-            const tableEndY = yPos;
-            doc.line(monthlyStartX, tableStartY, monthlyStartX + 175, tableStartY); // Header top
-            doc.line(monthlyStartX, tableStartY + 12, monthlyStartX + 175, tableStartY + 12); // Header bottom
-            doc.line(monthlyStartX, tableEndY, monthlyStartX + 175, tableEndY); // Table bottom
-
-            // Summary statistics for the table
-            yPos += 15;
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
-            doc.text('RINGKASAN TABEL:', 20, yPos);
-            yPos += 10;
-            doc.setFontSize(10);
-            
-            const approvedCount = reportData.monthlyEmployeeApplications.filter(app => app.status === 'Disetujui').length;
-            const rejectedCount = reportData.monthlyEmployeeApplications.filter(app => app.status === 'Ditolak').length;
-            const pendingCount = reportData.monthlyEmployeeApplications.filter(app => app.status === 'Menunggu').length;
-            
-            doc.setTextColor(34, 197, 94);
-            doc.text(`• Disetujui: ${approvedCount} pengajuan`, 25, yPos);
-            yPos += 8;
-            doc.setTextColor(239, 68, 68);
-            doc.text(`• Ditolak: ${rejectedCount} pengajuan`, 25, yPos);
-            yPos += 8;
-            doc.setTextColor(245, 158, 11);
-            doc.text(`• Menunggu: ${pendingCount} pengajuan`, 25, yPos);
 
             // Footer
             doc.setFontSize(10);
